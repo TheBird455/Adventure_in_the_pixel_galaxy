@@ -1,6 +1,6 @@
   $(document).ready(function(){
   starting_menu();
-
+  
   start();
 });
 
@@ -12,9 +12,9 @@ const Difficulty = {
 
 class Settings {
  constructor() {
-
+   
  }
-
+ 
 setDifficulty(difficulty) {
    this._difficulty = difficulty;
    $("#difficulty_menu a").removeClass("selected");
@@ -43,6 +43,7 @@ var myvx, myvy, myomega;
 myvx = 0;
 myvy = 0;
 myomega = 0;
+myangle = 0;
 
 // min/max for stars not canvas
 var xMin = -10;
@@ -50,11 +51,11 @@ var yMin = -10;
 var xMax = 10;
 var yMax = 10;
 var delta_v = 0.1;
-var deltaomega = 0.05;
-var max_v = 20.0;
-var maxomega = 5;
+var deltaomega = 0.03;
+var max_v = 10.0;
+var maxomega = 3;
 var bullet_v0 = -20;
-
+var fire_rate = 2;
 var spaceShipImage;
 
 var bulletImage;
@@ -68,6 +69,8 @@ function canvasy(x,y,myWidth,myHeight){
 var starCoordinates = [];
 var bulletCoordinates = [];
 var bulletVelocities  = [];
+var bulletOrientations = [];
+var asteroidCoordinates = [];
 
 // TODO star colors and size
 function start(){
@@ -77,47 +80,55 @@ function start(){
   myy = 0;
   spaceShipImage = new Image();
   spaceShipImage.src = "spaceship2.png"
-
+  
   bulletImage = new Image();
   bulletImage.src = "bullet 3.png";
+  
+  asteroidImage = new Image();
+  asteroidImage.src = "atsroid2.png";
 }
 
 function nextCoordinates(x,y, vx, vy) {
   x += vx * delta_t / 1000;
   y += vy * delta_t / 1000;
-
+  
   x -= myvx * delta_t / 1000;
   y -= myvy * delta_t / 1000;
   omega = myomega * delta_t / 1000;
-
+  
   next_x =  x * Math.cos(omega) + y * Math.sin(omega);
   next_y = -x * Math.sin(omega) + y * Math.cos(omega);
-
+  
   return [next_x, next_y];
 }
 
 function nextVelocities(vx, vy) {
   next_vx =  vx * Math.cos(omega) + vy * Math.sin(omega);
   next_vy = -vx * Math.sin(omega) + vy * Math.cos(omega);
-
+  
   return [next_vx, next_vy];
 }
 
+function cleanUpBullets(){
+  
+}
+
 function moveCoordinates(){
+  myangle += myomega * delta_t / 1000;
   for (i=0;i<numberOfStars;i++) {
     starx=starCoordinates[i][0];
     stary=starCoordinates[i][1];
-
+    
     starCoordinates[i] = nextCoordinates(starx, stary, 0, 0);
   }
-
+  
   for (i=0;i<bulletCoordinates.length;i++) {
     bulletx = bulletCoordinates[i][0];
     bullety = bulletCoordinates[i][1];
-
+    
     bulletvx = bulletVelocities[i][0];
     bulletvy = bulletVelocities[i][1];
-
+    
     bulletVelocities[i]  = nextVelocities(bulletvx, bulletvy);
     bulletCoordinates[i] = nextCoordinates(bulletx, bullety, bulletvx, bulletvy);
   }
@@ -135,11 +146,13 @@ function redraw(){
     starRadius=1;
     starx=starCoordinates[i][0];
     stary=starCoordinates[i][1];
-
+    
     if ((Math.abs(starx - myx) > 20) || (Math.abs(stary - myy) > 20)) {
+      newX =
       starCoordinates[i] = ([Math.random()*(xMax - xMin) + xMin + myx, Math.random()*(yMax - yMin) + yMin + myy]);
+      
     }
-
+    
     centerx=canvasx(starx,stary,2*starRadius,2*starRadius);
     centery=canvasy(starx,stary,2*starRadius,2*starRadius);
     context.beginPath();
@@ -147,53 +160,70 @@ function redraw(){
     context.strokeStyle = "#888";
     context.stroke();
   }
-
+  
   for (i=0;i<bulletCoordinates.length;i++) {
     bullet_xy = bulletCoordinates[i];
-
+    bullet_x = canvasx(bullet_xy[0],bullet_xy[1],bulletImage.width, bulletImage.height);
+    
+    bullet_y = canvasy(bullet_xy[0],bullet_xy[1],bulletImage.width, bulletImage.height);
+    
+//    context.save();
+//    context.translate(-bullet_x-bulletImage.width/2, -bullet_y-bulletImage.height/2);
+//    bulletOrientation = bulletOrientations[i];
+//    context.rotate(bulletOrientation);
+//    context.translate(bullet_x+bulletImage.width/2, bullet_y_bulletImage.height/2);
+    
   context.drawImage(
     bulletImage,
-    canvasx(bullet_xy[0],bullet_xy[1],bulletImage.width, bulletImage.height),
-    canvasy(bullet_xy[0],bullet_xy[1],bulletImage.width, bulletImage.height));
+    bullet_x,
+    bullet_y);
+      
+//    context.restore();
   }
-
+  
   context.drawImage(
     spaceShipImage,
     canvasx(0, 0, spaceShipImage.width,spaceShipImage.height),
     canvasy(0, 0, spaceShipImage.width,spaceShipImage.height)
     );
+    
+  context.drawImage(
+    asteroidImage,
+    asteroid_x,
+    asteroid_y);
+    
 }
 
 function starting_menu(){
   $("#start").click(function(event){
    $("#start_menu").toggle();
   });
-
+  
   $("#new_game").click(function(event){
     new_game();
   });
-
+  
   $("#options").click(function(event){
    $("#option_menu").toggle();
   });
-
+  
   $("#difficulty").click(function(event){
     $("#difficulty_menu").toggle();
   });
-
+  
   $("#easy").click(function(event){
     settings.setDifficulty(Difficulty.EASY);
   });
-
+  
   $("#normal").click(function(event){
     settings.setDifficulty(Difficulty.NORMAL);
   });
-
+  
   $("#hard").click(function(event){
     settings.setDifficulty(Difficulty.HARD);
   });
 
-
+  
 }
 
 var numberOfStars = 400;
@@ -231,14 +261,25 @@ function new_game(){
 function propagate(){
   keyHandler();
   moveCoordinates();
-
+  cleanUpBullets();
+ 
 }
 
-function fire() {
+function throttled_fire() {
   bulletCoordinates.push([0,0]);
-  bulletVelocities.push([0, bullet_v0]);
+  bulletVelocities.push([myvx, myvy+bullet_v0]);
+  bulletOrientations.push(myangle);
 }
 
+var last_fire = 0;
+var bullet_period = 1000/fire_rate;
+function fire() {
+  current_time = (new Date()).getTime();
+  if (current_time - last_fire > bullet_period){
+    throttled_fire();
+    last_fire = current_time;
+  }
+}
       function keyHandler(){
         for(let keyCode of keyMap.values()){
           if (keyCode == 80) {
@@ -266,27 +307,27 @@ function fire() {
               fire();
             break;
          }
-
+         
          if (myvx>max_v) {
            myvx = max_v;
          }
-
+         
          if (myvx < -max_v) {
            myvx = -max_v;
          }
-
+         
          if (myvy > max_v) {
            myvy = max_v;
          }
-
+         
          if (myvy < -max_v) {
            myvy = -max_v;
          }
-
+         
          if (myomega > maxomega) {
            myomega = + maxomega;
          }
-
+         
          if (myomega < -maxomega) {
            myomega = - maxomega;
          }
