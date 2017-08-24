@@ -1,0 +1,354 @@
+<html>
+  <head><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <style type="text/css">
+      /* TODO - style the start screen
+      */
+      body {
+        background-color: #000;
+        background-image:url(http://www.gunnars.com/wp-content/uploads/2014/08/Space.jpg);
+        background-size:cover;
+        -webkit-background-size: cover;
+        color: #fff;
+      }
+      div.title {
+        width: 100%;
+        text-align: center;
+        font-size: 200%;
+        font-weight: bold;
+        font-family: georgia,cursive;
+        font-style: italic;
+        color: #ffd700;
+      }
+      dialog {
+        position: absolute;
+        display: hidden;
+        color: white;
+        background: black;
+        border: 3px solid white;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      img.small {
+        width: 20px;
+      }
+      div#asteroid{
+        position:fixed;
+        left:0px;
+        top:0px;
+        width:50px;
+        height:50px;
+        background:#fff;
+      }
+      div#spaceship{
+        position:fixed;
+        left:0px;
+        top:0px;
+        width:90px;
+        height:90px;
+        background:clear;
+      }
+      div#bullet{
+        position:fixed;
+        left:0px;
+        top:0px;
+        width:5px;
+        height:5px;
+        background:#fff;
+        z-index:-10;
+      }
+      img.small{
+          width:100%;
+          height:auto;
+      }
+      img.bullet{
+          width:100%;
+          height:auto;
+      }
+      /* TODO - style the game screen [put the pause button and score on the top and
+         make the gameView take up the rest of the screen with a border ]
+      */
+    </style>
+    <title>Jack's Game</title>
+    <script type="text/javascript">
+    var score = 0;
+    var timer =null;
+    var Paused = false;
+    var delta_t =10;//miliseconds
+    var width=792;//$("body").width();
+    var height=638;//$("body").height();
+    var theta,omega,x,y,vx,vy;
+    var r;
+    var asteroid_radius =70;
+    var top_speed = 0.2;
+    var min_speed = 0.1;
+    var max_omega = 0.005;
+    var delta_angle = 0.03;
+    var delta_v = 0.005;
+    var max_speed = 0.8;
+    var gamma = 0.0002;
+    var bullet_v = 0.4;
+    var ship_x,ship_y,ship_vx,ship_vy, ship_theta,ship_omega;
+    var removeme_phi=0;
+    ship_x =0;
+    ship_y =0;
+    ship_vx =0;
+    ship_vy =0;
+    ship_theta = 0;
+    ship_omega = 0;
+    var ship_r;
+    var bullet_x, bullet_y, bullet_vx, bullet_vy, bullet_theta;
+    
+    function startAsteroid() {
+      x=width*Math.random();
+      y=height*Math.random();
+      theta = 6.28*Math.random();
+      omega = max_omega*Math.random();
+      // TODO - min/max speed
+      var speed = min_speed + Math.random() * (top_speed - min_speed);
+      var angle = 6.28 * Math.random(); // any angle
+      
+      vx = speed * Math.cos(angle);
+      vy = speed * Math.sin(angle);
+
+    }
+    function collisionDetect(){
+      delta_x = bullet_x-x;
+      delta_y = bullet_y-x;
+      
+      r = Math.sqrt(delta_x*delta_x + delta_y*delta_y);
+      
+      if (r<asteroid_radius) {
+        startAsteroid();
+        alert ("PRESS PAUSE")
+      }
+    }
+    
+    function propagate(){
+      keyHandler();
+      collisionDetect();
+      if (Paused){
+        return;
+      }
+      var asteroid=$("#asteroid");
+      x = x + delta_t * vx;
+      y = y + delta_t * vy;
+      theta = theta+delta_t*omega;
+      if (x > width) {
+        x = x - width;
+      }
+      if (x < 0) {
+        x = x + width;
+      }
+      
+      if (y>height) {
+        vy *= -1;
+        y = height;
+      }
+      if (y < 0) {
+        vy *= -1;
+        y = 0;
+      }
+      asteroid.css("top", ""+y+"px");
+      asteroid.css("left",""+x+"px");
+      asteroid.css("transform", "rotate("+theta+"Rad)");
+      score+=0.01;
+      var asteroid=$("#spaceship");
+      ship_x = ship_x + delta_t * ship_vx;
+      ship_y = ship_y + delta_t * ship_vy;
+      ship_vx -= gamma * ship_vx * delta_t;
+      ship_vy -= gamma * ship_vy * delta_t;
+      ship_theta = ship_theta+delta_t*ship_omega
+      if (ship_x > width) {
+        ship_x = ship_x - width;
+      }
+      if (ship_x < 0) {
+        ship_x = ship_x + width;
+      }
+      
+      if (ship_y > height) {
+        ship_y = ship_y - height;
+      }
+      if (ship_y < 0) {
+        ship_y = ship_y + height;
+      }
+      
+      var spaceship=$("#spaceship");
+      spaceship.css("top", ""+ship_y+"px");
+      spaceship.css("left",""+ship_x+"px");
+      spaceship.css("transform", "rotate("+ship_theta+"Rad)");
+      
+      var spaceshipOrigin = $("#spaceshipOrigin");
+      spaceshipOrigin.css("top", ""+ship_y+"px");
+      spaceshipOrigin.css("left",""+ship_x+"px");
+      
+      
+      bullet_x = bullet_x + delta_t * bullet_vx;
+      bullet_y = bullet_y + delta_t * bullet_vy;
+      
+      
+      var bullet=$("#bullet");
+      bullet.css("top", ""+(bullet_y)+"px");
+      bullet.css("left",""+(bullet_x)+"px");
+      bullet.css("transform", "rotate("+bullet_theta+"Rad)");
+
+      $("#score").text(score.toFixed(2));
+      
+    }
+      function Resume(){
+        Paused =false;
+        $("dialog").hide();
+      }
+      function Pause(){
+        Paused =true;
+        $("dialog").show();
+      }
+      function Quit(){
+        $("#game").hide();
+        $("#titlePage").show();
+        $("#dialog").hide();
+        Paused =false;
+        clearInterval(timer);
+      }
+      function fire(){
+      $("#bullet").show();
+      var spaceship=$("#spaceship");
+      var spaceship_width = spaceship.css( "width" ).replace("px", "");
+      var spaceship_height = spaceship.css( "height").replace("px", "");
+      
+      var bullet = $("#bullet");
+      var bullet_width = bullet.css("width").replace("px","");
+      var bullet_height = bullet.css("height").replace("px", "");
+
+      bullet_x = ship_x + (spaceship_width-bullet_width)/2 * (Math.cos(0)+Math.sin(0));
+      bullet_y = ship_y + (spaceship_height-bullet_height)/2 * (Math.cos(0)-Math.sin(0));
+      bullet_vx = bullet_v*Math.cos(ship_theta-1.57);
+      bullet_vy = bullet_v*Math.sin(ship_theta-1.57);
+      bullet_theta = ship_theta;
+      }
+      function start(){
+          $("#titlePage").hide();
+          $("#game").show();
+          $("dialog").hide();
+          score = 0;
+          
+          timer =setInterval("propagate()",delta_t);
+          startAsteroid();
+      }
+      var keyMap= new Set();
+      function keyHandler(){
+        for(let keyCode of keyMap.values()){
+          if (keyCode == 80) {
+            if (Paused) {
+              Resume();
+            } else {
+              Pause();
+            }
+          }
+          var ship_delta=1;
+          switch(keyCode){
+            case 37:
+              ship_theta -= delta_angle;
+            break;
+            case 39:
+              ship_theta += delta_angle;
+            break;
+            case 40:
+              //todo slow down
+              ship_vx -= delta_v*Math.cos(ship_theta-1.57);
+              ship_vy -= delta_v*Math.sin(ship_theta-1.57);
+            console.log ("down");
+            break;
+            case 38:
+              ship_speed=Math.sqrt(ship_vx*ship_vx+ship_vy*ship_vy);
+              if (ship_speed< max_speed){
+                ship_vx += delta_v*Math.cos(ship_theta-1.57);
+                ship_vy += delta_v*Math.sin(ship_theta-1.57);
+              }
+            console.log ("up");
+            break;
+            case 32:
+              fire();
+            break;
+         }
+          }
+      }
+      $(document).ready(function(){
+        width=$("body").width();
+        height=$("body").height();
+        ship_x=width/2;
+        ship_y=height/2;
+        ship_r = Math.sqrt (Math.pow($ ("#spaceship").width(),2)+Math.pow($("#spaceship").height(),2))/2;
+        r = Math.sqrt (Math.pow($ ("#asteroid").width(),2)+Math.pow($("#asteroid").height(),2))/2;
+        $("#game").hide();
+        $("#bullet").hide();
+        $("#Pause").change(function(event) {
+          console.log($(event.target),val());
+          console.log(event);
+          });
+        $("#optionsForm").submit(function( event ){
+          start();
+          event.preventDefault();
+        });
+        $("#pauseButton").click(function( event ){
+          Pause();
+        });
+        
+         $("#Unpause").click(function( event ){
+          Resume();
+        });
+        $("#Quit").click(function( event ){
+          Quit();
+        });
+        $(document).keyup(function(event) {
+          keyMap.delete(event.keyCode);
+          });
+        // ke
+        $(document).keydown(function(event) {
+          keyMap.add(event.keyCode);
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="titlePage">
+    <div class="title">Adventure  In  The  Elliptical  Galaxy</div>
+    <div class="options">
+      <form id="optionsForm">
+        <select name="dificulty">
+          <option value="hard">Hard</option>
+          <option value="normal">Normal</option>
+          <option value="easy">Esay</option>
+      </select>
+        <input type="submit" value="start"/>
+        <input type="text" name="username" placeholder="Username"/>
+      </form>
+    </div>
+    </div>
+     <div id="game">
+       <dialog>
+         <h1>HAPPY FATHERS DAY DAD!!!!!, thank you so much for taking me in and for being such a loving Father. I apriciate every thing you've done for me from staying in the hospital with me all day every day, too dealing with DCS, and for spending so much money on trying to reunite me and my brother in the same  home. If it wasn't for you I would not be such an incredable jokester and a christian of corse. I am proud to be your son and to be a Taylor, love you so much.
+         
+          Jack</h1>
+           <button id ="Unpause">Resume</button>
+           <button id ="Quit">Quit</button>
+           </dialog>
+       <div class="titleBar">
+         <button id ="pauseButton">Pause</button>
+         <div id="score">
+         </div>
+       </div>
+       <div id="gameView">
+         <!--<div id="spaceship"><img class = "small" src="http://piq.codeus.net/static/media/userpics/piq_218888_400x400.png"/></div>-->
+         <div id="spaceship"><img class = "small" src="externalfile:drive-f2977043b6f3a20e5bf17381dcf2163b70320591/root/spaceship.png"/></div>
+         
+         <div id="spaceshipOrigin"></div>
+
+         <div id="asteroid"><img class = "small" src="externalfile:drive-f2977043b6f3a20e5bf17381dcf2163b70320591/root/coding/asteroid1.png"/></div>
+         <div id="bullet"><img class = "bullet" src= "externalfile:drive-f2977043b6f3a20e5bf17381dcf2163b70320591/root/coding/clash2.png"/></div>
+
+       </div>
+    </div>
+  </body>
+</html>

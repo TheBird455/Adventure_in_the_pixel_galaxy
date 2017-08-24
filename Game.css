@@ -1,0 +1,126 @@
+body {
+  background-image:url(http://www.animateit.net/data/media/june2010/d6e5e40d22d3.gif);
+  font-family: 'Orbitron', sans-serif;
+  font-size:250%;
+  text-align:center;
+  color: #0033FF;
+}
+
+.title {
+    letter-spacing:5px;
+z-index:10;
+}
+
+canvas{
+  position:absolute;
+  margin:0;
+  padding:0;
+  left:0;
+  right:0;
+  width:100%;
+  bottom:0;
+  top:0;
+  height:100%;
+  display:none;
+  
+}
+
+h2 {
+  margin: 0;
+  margin-top:0.5em;
+  margin-bottom:0.25em;
+  padding:0;
+}
+
+ul {
+  margin:0;
+  padding:0;
+}
+
+ul ul {
+  font-size:0.80em;
+}
+
+ul ul a {
+  color:red;
+}
+
+ul ul a:hover {
+  color:lime;
+}
+
+.selected {
+  color:green;
+}
+
+li {
+  margin:0;
+  padding:0;
+}
+
+nav {
+  margin: 0.5em;
+}
+
+.starting_menu{
+  border: 5px solid  #0033FF;
+  background:black;
+  margin:auto;
+  width:10em;
+  margin-top:0.5em;
+}
+
+.starting_menu ul {
+  list-style-type:none;
+}
+
+#start_menu{
+  display:none;
+}
+
+#option_menu{
+  display:none;
+}
+
+#start{
+  color:red;
+}
+
+#start:hover{
+  color:lime;
+}
+
+#options{
+  color:red;
+}
+
+#options:hover{
+  color:lime;
+}
+
+#difficulty:hover{
+  color:lime;
+}
+#difficulty_menu{
+  display:none;
+}
+
+#new_game:hover{
+  color:lime;
+}
+
+#continue:hover{
+  color:lime;
+}
+
+#load_game:hover{
+  color:lime;
+}
+
+#music:hover{
+  color:lime;
+}
+
+#sound:hover{
+  color:lime;
+}
