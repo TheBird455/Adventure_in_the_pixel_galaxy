@@ -71,6 +71,9 @@ var bulletCoordinates = [];
 var bulletVelocities  = [];
 var bulletOrientations = [];
 var asteroidCoordinates = [];
+var asteroidVelocities = [];
+var asteroidOrientations = [];
+var asteroidRotations = [];
 
 // TODO star colors and size
 function start(){
@@ -132,6 +135,15 @@ function moveCoordinates(){
     bulletVelocities[i]  = nextVelocities(bulletvx, bulletvy);
     bulletCoordinates[i] = nextCoordinates(bulletx, bullety, bulletvx, bulletvy);
   }
+
+  for (i=0;i<asteroidCoordinates.length;i++) {
+    asteroidX = asteroidCoordinates[i][0];
+    asteroidY = asteroidCoordinates[i][1];
+
+    // TODO / FIXME - add asteroid vxy and rotations
+
+    asteroidCoordinates[i] = nextCoordinates(asteroidX, asteroidY, 0, 0);
+  }
 }
 
 function redraw(){
@@ -150,7 +162,6 @@ function redraw(){
     if ((Math.abs(starx - myx) > 20) || (Math.abs(stary - myy) > 20)) {
       newX =
       starCoordinates[i] = ([Math.random()*(xMax - xMin) + xMin + myx, Math.random()*(yMax - yMin) + yMin + myy]);
-
     }
 
     centerx=canvasx(starx,stary,2*starRadius,2*starRadius);
@@ -159,6 +170,20 @@ function redraw(){
     context.arc(centerx,centery,starRadius,0,2*Math.PI,false);
     context.strokeStyle = "#888";
     context.stroke();
+  }
+
+  for (i=0;i<numberOfAsteroids;i++) {
+    asteroidX = asteroidCoordinates[i][0];
+    asteroidY = asteroidCoordinates[i][1];
+    // TODO / FIXME - add asteroid rotations, movement, and cleanup
+
+    asteroidX = canvasx(asteroidX, asteroidY, asteroidImage.width, asteroidImage.height);
+    asteroidY = canvasy(asteroidX, asteroidY, asteroidImage.width, asteroidImage.height);
+
+    context.drawImage(
+      asteroidImage,
+      asteroidX,
+      asteroidY);
   }
 
   for (i=0;i<bulletCoordinates.length;i++) {
@@ -191,7 +216,6 @@ function redraw(){
     asteroidImage,
     asteroid_x,
     asteroid_y);
-
 }
 
 function starting_menu(){
@@ -222,18 +246,20 @@ function starting_menu(){
   $("#hard").click(function(event){
     settings.setDifficulty(Difficulty.HARD);
   });
-
-
 }
 
 var numberOfStars = 400;
-
-
-
+var numberOfAsteroids = 5;
 
 function initStarfield() {
   for (i=0;i<numberOfStars;i++) {
     starCoordinates.push([Math.random()*(xMax - xMin) + xMin, Math.random()*(yMax - yMin) + yMin])
+  }
+}
+
+function initAsteroids() {
+  for (i=0;i<numberOfAsteroids;i++) {
+    asteroidCoordinates.push([Math.random()*(xMax - xMin) + xMin, Math.random()*(yMax - yMin) + yMin])
   }
 }
 
@@ -248,6 +274,7 @@ function new_game(){
   $("body").css("background-image","none");
   $("body").css("background","black");
   initStarfield();
+  initAsteroids();
    $(document).keyup(function(event) {
           keyMap.delete(event.keyCode);
           });
