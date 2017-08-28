@@ -53,6 +53,7 @@ var yMax = 10;
 var delta_v = 0.1;
 var deltaomega = 0.03;
 var max_v = 10.0;
+var maxAsteroidVelocity = 0.1;
 var maxomega = 3;
 var bullet_v0 = -20;
 var fire_rate = 2;
@@ -141,8 +142,10 @@ function moveCoordinates(){
     asteroidY = asteroidCoordinates[i][1];
 
     // TODO / FIXME - add asteroid vxy and rotations
-
-    asteroidCoordinates[i] = nextCoordinates(asteroidX, asteroidY, 0, 0);
+    asteroidVx = asteroidVelocities[i][0];
+    asteroidVy = asteroidVelocities[i][1];
+    asteroidVelocities[i] = nextVelocities(asteroidVx, asteroidVy);
+    asteroidCoordinates[i] = nextCoordinates(asteroidX, asteroidY, asteroidVx, asteroidVx);
   }
 }
 
@@ -185,6 +188,7 @@ function redraw(){
       asteroidImage,
       0,
       0);
+
     context.rotate(myangle);
     context.translate(-asteroidX-asteroidImage.width/2, -asteroidY-asteroidImage.height/2);
   }
@@ -192,21 +196,12 @@ function redraw(){
   for (i=0;i<bulletCoordinates.length;i++) {
     bullet_xy = bulletCoordinates[i];
     bullet_x = canvasx(bullet_xy[0],bullet_xy[1],bulletImage.width, bulletImage.height);
-
     bullet_y = canvasy(bullet_xy[0],bullet_xy[1],bulletImage.width, bulletImage.height);
 
-//    context.save();
-//    context.translate(-bullet_x-bulletImage.width/2, -bullet_y-bulletImage.height/2);
-//    bulletOrientation = bulletOrientations[i];
-//    context.rotate(bulletOrientation);
-//    context.translate(bullet_x+bulletImage.width/2, bullet_y_bulletImage.height/2);
-
-  context.drawImage(
-    bulletImage,
-    bullet_x,
-    bullet_y);
-
-//    context.restore();
+    context.drawImage(
+      bulletImage,
+      bullet_x,
+      bullet_y);
   }
 
   context.drawImage(
@@ -214,11 +209,6 @@ function redraw(){
     canvasx(0, 0, spaceShipImage.width,spaceShipImage.height),
     canvasy(0, 0, spaceShipImage.width,spaceShipImage.height)
     );
-
-  context.drawImage(
-    asteroidImage,
-    asteroid_x,
-    asteroid_y);
 }
 
 function starting_menu(){
@@ -263,6 +253,7 @@ function initStarfield() {
 function initAsteroids() {
   for (i=0;i<numberOfAsteroids;i++) {
     asteroidCoordinates.push([Math.random()*(xMax - xMin) + xMin, Math.random()*(yMax - yMin) + yMin])
+    asteroidVelocities.push([maxAsteroidVelocity*(2*Math.random()-1), maxAsteroidVelocity*(2*Math.random()-1)]);
   }
 }
 
