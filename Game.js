@@ -179,11 +179,14 @@ function redraw(){
 
     asteroidX = canvasx(asteroidX, asteroidY, asteroidImage.width, asteroidImage.height);
     asteroidY = canvasy(asteroidX, asteroidY, asteroidImage.width, asteroidImage.height);
-
+    context.translate(asteroidX+asteroidImage.width/2, asteroidY+asteroidImage.height/2);
+    context.rotate(-myangle);
     context.drawImage(
       asteroidImage,
-      asteroidX,
-      asteroidY);
+      0,
+      0);
+    context.rotate(myangle);
+    context.translate(-asteroidX-asteroidImage.width/2, -asteroidY-asteroidImage.height/2);
   }
 
   for (i=0;i<bulletCoordinates.length;i++) {
