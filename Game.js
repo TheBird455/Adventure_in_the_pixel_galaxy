@@ -53,7 +53,8 @@ var yMax = 10;
 var delta_v = 0.1;
 var deltaomega = 0.03;
 var max_v = 10.0;
-var maxAsteroidVelocity = 0.1;
+var maxAsteroidVelocity = 1.5;
+var minAsteroidVelocity = 0.2;
 var maxomega = 3;
 var bullet_v0 = -20;
 var fire_rate = 2;
@@ -163,7 +164,6 @@ function redraw(){
     stary=starCoordinates[i][1];
 
     if ((Math.abs(starx - myx) > 20) || (Math.abs(stary - myy) > 20)) {
-      newX =
       starCoordinates[i] = ([Math.random()*(xMax - xMin) + xMin + myx, Math.random()*(yMax - yMin) + yMin + myy]);
     }
 
@@ -178,6 +178,13 @@ function redraw(){
   for (i=0;i<numberOfAsteroids;i++) {
     asteroidX = asteroidCoordinates[i][0];
     asteroidY = asteroidCoordinates[i][1];
+    if ((Math.abs(asteroidX-myx) > 20) || (Math.abs(asteroidY-myy) > 20)) {
+      asteroidCoordinates[i]=([Math.random()*(xMax - xMin) + xMin, Math.random()*(yMax - yMin) + yMin]);
+      asteroidSpeed = minAsteroidVelocity + Math.random()*(maxAsteroidVelocity - minAsteroidVelocity);
+      asteroidDirection = 2*Math.PI*Math.random();
+
+      asteroidVelocities[i]=([Math.cos(asteroidDirection)*asteroidSpeed,Math.sin(asteroidDirection)*asteroidSpeed]);
+    }
     // TODO / FIXME - add asteroid rotations, movement, and cleanup
 
     asteroidX = canvasx(asteroidX, asteroidY, asteroidImage.width, asteroidImage.height);
@@ -252,8 +259,11 @@ function initStarfield() {
 
 function initAsteroids() {
   for (i=0;i<numberOfAsteroids;i++) {
-    asteroidCoordinates.push([Math.random()*(xMax - xMin) + xMin, Math.random()*(yMax - yMin) + yMin])
-    asteroidVelocities.push([maxAsteroidVelocity*(2*Math.random()-1), maxAsteroidVelocity*(2*Math.random()-1)]);
+    asteroidCoordinates.push([Math.random()*(xMax - xMin) + xMin, Math.random()*(yMax - yMin) + yMin]);
+    asteroidSpeed = minAsteroidVelocity + Math.random()*(maxAsteroidVelocity - minAsteroidVelocity);
+    asteroidDirection = 2*Math.PI*Math.random();
+
+    asteroidVelocities.push([Math.cos(asteroidDirection)*asteroidSpeed,Math.sin(asteroidDirection)*asteroidSpeed]);
   }
 }
 
