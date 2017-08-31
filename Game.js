@@ -55,6 +55,7 @@ var deltaomega = 0.03;
 var max_v = 10.0;
 var maxAsteroidVelocity = 1.5;
 var minAsteroidVelocity = 0.2;
+var maximumAsteroidRotationSpeed = 1.0;
 var maxomega = 3;
 var bullet_v0 = -20;
 var fire_rate = 2;
@@ -139,6 +140,9 @@ function moveCoordinates(){
   }
 
   for (i=0;i<asteroidCoordinates.length;i++) {
+    asteroidRotation    = asteroidRotations[i];
+    asteroidOrientation = asteroidOrientations[i];
+    asteroidOrientations[i] = asteroidOrientation + asteroidRotation*delta_t/1000;
     asteroidX = asteroidCoordinates[i][0];
     asteroidY = asteroidCoordinates[i][1];
 
@@ -189,12 +193,16 @@ function redraw(){
 
     asteroidX = canvasx(asteroidX, asteroidY, asteroidImage.width, asteroidImage.height);
     asteroidY = canvasy(asteroidX, asteroidY, asteroidImage.width, asteroidImage.height);
+    asteroidOrientation = asteroidOrientations[i];
     context.translate(asteroidX+asteroidImage.width/2, asteroidY+asteroidImage.height/2);
     context.rotate(-myangle);
+    context.rotate(asteroidOrientation);
     context.drawImage(
       asteroidImage,
       0,
       0);
+
+    context.rotate(-asteroidOrientation);
 
     context.rotate(myangle);
     context.translate(-asteroidX-asteroidImage.width/2, -asteroidY-asteroidImage.height/2);
@@ -264,6 +272,8 @@ function initAsteroids() {
     asteroidDirection = 2*Math.PI*Math.random();
 
     asteroidVelocities.push([Math.cos(asteroidDirection)*asteroidSpeed,Math.sin(asteroidDirection)*asteroidSpeed]);
+    asteroidOrientations.push(2*Math.PI*Math.random());
+    asteroidRotations.push(maximumAsteroidRotationSpeed * Math.random());
   }
 }
 
