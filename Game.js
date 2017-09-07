@@ -95,6 +95,12 @@ function start() {
   asteroidImage.src = "atsroid.png";
 }
 
+function stop() {
+  myvx = 0;
+  myvy = 0;
+  myomega = 0;
+}
+
 function nextCoordinates(x, y, vx, vy) {
   x += vx * delta_t / 1000;
   y += vy * delta_t / 1000;
@@ -137,7 +143,7 @@ function moveCoordinates() {
     bulletvx = bulletVelocities[i][0];
     bulletvy = bulletVelocities[i][1];
 
-    bulletVelocities[i] = nextVelocities(bulletvx, bulletvy);
+    bulletVelocities[i]  = nextVelocities(bulletvx, bulletvy);
     bulletCoordinates[i] = nextCoordinates(bulletx, bullety, bulletvx, bulletvy);
   }
 
@@ -150,7 +156,7 @@ function moveCoordinates() {
 
     asteroidVx = asteroidVelocities[i][0];
     asteroidVy = asteroidVelocities[i][1];
-    asteroidVelocities[i] = nextVelocities(asteroidVx, asteroidVy);
+    asteroidVelocities[i]  = nextVelocities(asteroidVx, asteroidVy);
     asteroidCoordinates[i] = nextCoordinates(asteroidX, asteroidY, asteroidVx, asteroidVx);
   }
 }
@@ -167,13 +173,13 @@ function drawImage(coordinates, orientation, image) {
 
   context.translate(screenX, screenY);
   //context.rotate(-myangle);
-  context.rotate(orientation);
+  //context.rotate(orientation);
   context.drawImage(
     image,
     0,
     0);
 
-  context.rotate(-orientation);
+  //context.rotate(-orientation);
 
   //context.rotate(myangle);
   context.translate(-screenX, -screenY);
@@ -220,13 +226,9 @@ function redraw() {
 
   for (i = 0; i < bulletCoordinates.length; i++) {
     bullet_xy = bulletCoordinates[i];
+    bulletOrientation = bulletOrientations[i];
 
-    //drawImage(asteroidCoordinates[i], asteroidOrientation[i], bulletImage);
-
-    bullet_x = canvasx(bullet_xy[0], bullet_xy[1], bulletImage.width, bulletImage.height);
-    bullet_y = canvasy(bullet_xy[0], bullet_xy[1], bulletImage.width, bulletImage.height);
-
-    drawImage(bullet_xy, 0, bulletImage);
+    drawImage(bullet_xy, bulletOrientation, bulletImage);
   }
 
   context.drawImage(
@@ -359,6 +361,9 @@ function keyHandler() {
         break;
       case 32:
         fire();
+        break;
+      case 88:
+        stop();
         break;
     }
 
