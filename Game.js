@@ -47,7 +47,7 @@ function canvasy(x, y, myWidth, myHeight) {
   return (y) * myscale + canvasHeight / 2 - myHeight / 2;
 }
 
-function nextCoordinates(entity) {
+function updateCoordinates(entity) {
   entity.x -= myvx * delta_t;
   entity.y -= myvy * delta_t;
   delta_angle = myomega * delta_t;
@@ -202,7 +202,7 @@ class Star {
   }
 
   moveCoordinates(){
-    nextCoordinates(this);
+    updateCoordinates(this);
   }
 }
 
@@ -327,6 +327,10 @@ class Universe {
     context.imageSmoothingEnabled = false;
 
     universe.starfield.draw(context);
+
+    universe.entities.forEach(function(entity) {
+      entity.draw(context);
+    });
   }
 
   // start the Universe
@@ -373,7 +377,7 @@ class Entity2D {
   }
 
   moveCoordinates() {
-    console.log("TODO - moveCoordinates");
+    updateCoordinates(self);
   }
 
   draw(context, center, orientation, scale) {
