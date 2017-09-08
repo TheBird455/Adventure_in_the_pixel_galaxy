@@ -4,7 +4,7 @@ $(document).ready(function() {
   start();
 });
 
-var numberOfStars = 400;
+var numberOfStars = 1000;
 var numberOfAsteroids = 5;
 var redraw_frequency = 20; // target frames per second (FPS); must be > 0
 
@@ -208,6 +208,18 @@ class Star {
 
   moveCoordinates(){
     updateCoordinatesForView(this);
+
+    if (this.x > xMax) {
+      this.x -= (xMax - xMin);
+    } else if (this.x < xMin) {
+      this.x += (xMax - xMin);
+    }
+
+    if (this.y > yMax) {
+      this.y -= (yMax - yMin);
+    } else if (this.y < yMin) {
+      this.y += (yMax - yMin);
+    }
   }
 }
 
@@ -401,7 +413,7 @@ class Entity2D {
     this.orientation = 0;     // rotation in radians; 2*PI = 360º (one full turn)
     this.angular_speed = 0;   // rotational speed
     this.lastCollissionAt = (new Date).getTime();
-    
+
     universe.addEntity(this);
   }
 
@@ -494,6 +506,10 @@ class Entity2D {
 class Bullet extends Entity2D {
   constructor() {
     super();
+
+    this.vx = myvx;
+    this.vy = myvy + bullet_v0;
+    this.orientation = myangle;
 
     this.image.src = "bullet.png"
   }
@@ -644,14 +660,11 @@ function propagate() {
 
 function throttled_fire() {
   bullet = new Bullet();
-  bullet.vx = myvx;
-  bullet.vy = myvy + bullet_v0;
-  bullet.orientation = myangle;
 }
 
 var last_fire = 0;
 var bullet_period = 1000 / fire_rate;
-
+// debounced fire limited to once per bullet_period (fire_rate per second)
 function fire() {
   current_time = (new Date()).getTime();
   if (current_time - last_fire > bullet_period) {
