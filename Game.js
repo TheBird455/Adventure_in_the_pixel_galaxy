@@ -23,8 +23,8 @@ var yMax = 10;
 var delta_v = 0.1;
 var deltaomega = 0.03;
 var max_v = 10.0;
-var maxAsteroidVelocity = 1.5;
-var minAsteroidVelocity = 0.2;
+var mininimumAsteroidVelocity    = 0.2;
+var maximumAsteroidVelocity      = 1.5;
 var maximumAsteroidRotationSpeed = .3;
 var maxomega = 3;
 var bullet_v0 = -20;
@@ -469,6 +469,12 @@ function start() {
     asteroid = new Asteroid();
     asteroid.x = (xMax - xMin) * Math.random() + xMin;
     asteroid.y = (yMax - yMin) * Math.random() + yMin;
+
+    asteroidSpeed = Math.random() * (maximumAsteroidVelocity - mininimumAsteroidVelocity) + mininimumAsteroidVelocity;
+    asteroidDirection = Math.random() * 2 * Math.PI;
+    asteroid.vx = asteroidSpeed * Math.cos(asteroidDirection);
+    asteroid.vy = asteroidSpeed * Math.sin(asteroidDirection);
+
     asteroid.orientation = Math.PI * 2 * Math.random();
     asteroid.angular_speed = (2 * Math.random() - 1) * maximumAsteroidRotationSpeed
   }
@@ -538,109 +544,6 @@ function nextVelocities(vx, vy) {
   next_vy = -vx * Math.sin(delta_angle) + vy * Math.cos(delta_angle);
 
   return [next_vx, next_vy];
-}
-
-function cleanUpBullets() {
-
-}
-
-function moveCoordinates() {
-  myangle += myomega * delta_t;
-  for (i = 0; i < numberOfStars; i++) {
-    starx = starCoordinates[i][0];
-    stary = starCoordinates[i][1];
-
-    starCoordinates[i] = nextCoordinates(starx, stary);
-  }
-
-  for (i = 0; i < bulletCoordinates.length; i++) {
-    bulletx = bulletCoordinates[i][0];
-    bullety = bulletCoordinates[i][1];
-
-    bulletvx = bulletVelocities[i][0];
-    bulletvy = bulletVelocities[i][1];
-
-    bulletVelocities[i]  = nextVelocities(bulletvx, bulletvy);
-    bulletCoordinates[i] = nextCoordinates(bulletx, bullety, bulletvx, bulletvy);
-  }
-
-  for (i = 0; i < asteroidCoordinates.length; i++) {
-    asteroidRotation = asteroidRotations[i];
-    asteroidOrientation = asteroidOrientations[i];
-    asteroidOrientations[i] = asteroidOrientation + asteroidRotation * delta_t;
-    asteroidX = asteroidCoordinates[i][0];
-    asteroidY = asteroidCoordinates[i][1];
-
-    asteroidVx = asteroidVelocities[i][0];
-    asteroidVy = asteroidVelocities[i][1];
-    asteroidVelocities[i]  = nextVelocities(asteroidVx, asteroidVy);
-    asteroidCoordinates[i] = nextCoordinates(asteroidX, asteroidY, asteroidVx, asteroidVx);
-  }
-
-  detectCollisions();
-}
-
-function drawImage(coordinates, orientation, image) {
-  x = coordinates[0];
-  y = coordinates[1];
-
-  width = image.width;
-  height = image.height;
-
-  screenX = canvasx(x, y, width, height);
-  screenY = canvasy(x, y, width, height);
-
-  context.translate(screenX, screenY);
-  //context.rotate(-myangle);
-  //context.rotate(orientation);
-  context.drawImage(
-    image,
-    0,
-    0);
-
-  //context.rotate(-orientation);
-
-  //context.rotate(myangle);
-  context.translate(-screenX, -screenY);
-}
-
-function redraw() {
-  canvasWidth = canvas.width();
-  canvasHeight = canvas.height();
-  canvas.attr("width", canvasWidth);
-  canvas.attr("height", canvasHeight);
-  myscale = canvasWidth / (xMax - xMin);
-  context = canvas.get(0).getContext("2d");
-  context.imageSmoothingEnabled = false;
-  for (i = 0; i < numberOfStars; i++) {
-    starRadius = 1;
-    starx = starCoordinates[i][0];
-    stary = starCoordinates[i][1];
-
-    if ((Math.abs(starx - myx) > 20) || (Math.abs(stary - myy) > 20)) {
-      starCoordinates[i] = ([Math.random() * (xMax - xMin) + xMin + myx, Math.random() * (yMax - yMin) + yMin + myy]);
-    }
-
-    centerx = canvasx(starx, stary, 2 * starRadius, 2 * starRadius);
-    centery = canvasy(starx, stary, 2 * starRadius, 2 * starRadius);
-    context.beginPath();
-    context.arc(centerx, centery, starRadius, 0, 2 * Math.PI, false);
-    context.strokeStyle = "#888";
-    context.stroke();
-  }
-
-  for (i = 0; i < bulletCoordinates.length; i++) {
-    bullet_xy = bulletCoordinates[i];
-    bulletOrientation = bulletOrientations[i];
-
-    drawImage(bullet_xy, bulletOrientation, bulletImage);
-  }
-
-  context.drawImage(
-    spaceShipImage,
-    canvasx(0, 0, spaceShipImage.width, spaceShipImage.height),
-    canvasy(0, 0, spaceShipImage.width, spaceShipImage.height)
-  );
 }
 
 function starting_menu() {
