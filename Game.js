@@ -4,6 +4,9 @@ $(document).ready(function() {
   start();
 });
 
+// time step in milliseconds (1/1000 of a second)
+var delta_t = 10;
+
 const Difficulty = {
   EASY: 0,
   NORMAL: 1,
@@ -33,6 +36,116 @@ class Settings {
 }
 
 var settings = new Settings();
+
+// ECMAScript doesn't have an assert keyword yet..
+function assert(value) {
+  if (value) {
+    return;
+  }
+
+  console.trace();
+  throw "assert failed"
+}
+
+// a generic Vector class for holding vectors and doing math with them
+class Vector {
+  constructor(dimensions) {
+    this.components = new Array(dimensions);
+  }
+
+  get dimensions() {
+    return this.components.length;
+  }
+
+  // get the distance between two vectors
+  static distance(a, b) {
+    // make sure we can do this..
+    assert(a instanceof Vector);
+    assert(b instanceof Vector);
+
+    const dimensions = a.dimensions;
+    assert(dimensions == b.dimensions);
+
+    var sumOfSquaredDistances = 0.0;
+    for (var i=0;i<dimensions;i++) {
+      sumOfSquaredDistances += Math.pow(a.components[i] - b.components[i], 2);
+    }
+
+    return Math.sqrt(sumOfSquaredDistances);
+  }
+}
+
+class Coordinates2D extends Vector {
+  // this is called when you make a new Coordinates2D
+  constructor(x = 0, y = 0) {
+    super();
+
+    this.components = [x, y];
+  }
+
+  get x() {
+    return this.components[0];
+  }
+
+  get y() {
+    return this.components[1];
+  }
+
+  set x(value) {
+    this.components[0] = value;
+  }
+
+  set y(value) {
+    this.components[1] = value;
+  }
+}
+
+class Velocity2D extends Vector {
+  // this is called when you make a new Velocity2D
+  constructor(vx = 0, vy = 0) {
+    super();
+
+    this.components = [vx, vy];
+  }
+
+  //
+  get x() {
+    return this.components[0];
+  }
+
+  get y() {
+    return this.components[1];
+  }
+
+  set x(value) {
+    this.components[0] = value;
+  }
+
+  set y(value) {
+    this.components[1] = value;
+  }
+}
+
+// an Entity is anything that exists within the game
+// examples include ships, planets, asteroids, bullets, etc.
+class Entity {
+  constructor() {
+    this.coordinates = new Coordinates2D(); // initial coordinates
+    this.velocity = new Vector2D();    // initial velocity
+    this.image = new Image(); // image for the entity
+    this.orientation = 0;     // rotation in radians; 2*PI = 360º (one full turn)
+    this.angular_speed = 0;   // rotational speed
+  }
+
+  // move the entity forward in time
+  propagate() {
+
+  }
+}
+
+class Asteroid extends Entity {
+
+}
 
 var canvas;
 var canvasWidth;
@@ -93,6 +206,8 @@ function start() {
 
   asteroidImage = new Image();
   asteroidImage.src = "atsroid.png";
+
+
 }
 
 function stop() {
@@ -236,7 +351,7 @@ function redraw() {
   canvasHeight = canvas.height();
   canvas.attr("width", canvasWidth);
   canvas.attr("height", canvasHeight);
-  myscale = canvasWidth / 20; // coordinates from -10 to 10
+  myscale = canvasWidth / (xMax - xMin);
   context = canvas.get(0).getContext("2d");
   context.imageSmoothingEnabled = false;
   for (i = 0; i < numberOfStars; i++) {
@@ -336,7 +451,6 @@ function initAsteroids() {
 }
 
 var keyMap = new Set();
-var delta_t = 10;
 var redraw_delta_t = 50;
 
 function new_game() {
