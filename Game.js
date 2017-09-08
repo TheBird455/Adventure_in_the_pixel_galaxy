@@ -46,6 +46,9 @@ class Settings {
 }
 
 var settings = new Settings();
+var redraw_frequency = 20; // target frames per second (FPS)
+
+var starCoordinates = []; // TODO / FIXME - refactor to a Stars class
 
 // TODO / FIXME - make Universe a singleton
 class Universe {
@@ -62,8 +65,50 @@ class Universe {
   }
 
   propagate() {
-    for (let entity of this.entities) {
+    for (let entity of universe.entities) {
       entity.propagate();
+    }
+  }
+
+  redraw() {
+    canvasWidth = canvas.width();
+    canvasHeight = canvas.height();
+    canvas.attr("width", canvasWidth);
+    canvas.attr("height", canvasHeight);
+    myscale = canvasWidth / (xMax - xMin);
+    var context = canvas.get(0).getContext("2d");
+    context.imageSmoothingEnabled = false;
+
+    for (i = 0; i < numberOfStars; i++) {
+      const starRadius = 1;
+      const starx = starCoordinates[i][0];
+      const stary = starCoordinates[i][1];
+
+      if ((Math.abs(starx - myx) > 20) || (Math.abs(stary - myy) > 20)) {
+        starCoordinates[i] = ([Math.random() * (xMax - xMin) + xMin + myx, Math.random() * (yMax - yMin) + yMin + myy]);
+      }
+
+      const centerx = canvasx(starx, stary, 2 * starRadius, 2 * starRadius);
+      const centery = canvasy(starx, stary, 2 * starRadius, 2 * starRadius);
+      context.beginPath();
+      context.arc(centerx, centery, starRadius, 0, 2 * Math.PI, false);
+      context.strokeStyle = "#888";
+      context.stroke();
+    }
+  }
+
+  // start the Universe
+  start() {
+    this.propagateTimer = setInterval(universe.propagate, delta_t * 50* 1000); // convert delta_t to milliseconds
+    this.redrawTimer = setInterval(universe.redraw, redraw_delta_t);
+  }
+
+  // end the Universe; stop timers and remove all entities
+  end() {
+    clearInterval(this.propagate_timer);
+
+    for (let entity of this.entities) {
+      this.removeEntity(entity);
     }
   }
 }
@@ -228,7 +273,6 @@ function canvasx(x, y, myWidth, myHeight) {
 function canvasy(x, y, myWidth, myHeight) {
   return (y) * myscale + canvasHeight / 2 - myHeight / 2;
 }
-var starCoordinates = [];
 var bulletCoordinates = [];
 var bulletVelocities = [];
 var bulletOrientations = [];
@@ -513,8 +557,8 @@ function new_game() {
   $(document).keydown(function(event) {
     keyMap.add(event.keyCode);
   });
-  timer = setInterval(propagate, delta_t * 1000); // convert delta_t to milliseconds
-  redrawTimer = setInterval(redraw, redraw_delta_t);
+
+  universe.start();
 }
 
 function propagate() {
