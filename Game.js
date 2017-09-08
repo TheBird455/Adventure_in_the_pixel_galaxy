@@ -40,11 +40,11 @@ var keyMap = new Set();
 
 // TODO / FIXME - refactor these to Universe or perhaps View
 function canvasx(x, y, myWidth, myHeight) {
-  return (x) * myscale + canvasWidth / 2 - myWidth / 2;
+  return (x) * myscale + canvasWidth / 2;// + myWidth / 2;
 }
 
 function canvasy(x, y, myWidth, myHeight) {
-  return (y) * myscale + canvasHeight / 2 - myHeight / 2;
+  return (y) * myscale+ canvasHeight / 2;// + myHeight / 2;
 }
 
 function updateCoordinatesForView(entity) {
@@ -308,6 +308,7 @@ class Universe {
   propagate() {
     // move the Universe forward in time
     keyHandler();
+    myangle += myomega * delta_t;
 
     universe.starfield.moveCoordinates();
 
@@ -401,17 +402,26 @@ class Entity2D {
     const centery = canvasy(this.x, this.y, this.image.width, this.image.height);
 
     context.translate(centerx, centery);
+    context.rotate(-myangle)
+    context.translate(-this.image.width/2, -this.image.height/2);
     context.drawImage(
       this.image,
       0,
       0);
-      context.translate(-centerx, -centery);
+      context.translate(this.image.width/2, this.image.height/2);
+
+    context.rotate(myangle)
+
+    context.translate(-centerx, -centery);
   }
 }
 
 class Asteroid extends Entity2D {
   constructor() {
     super(); // run the Entity2D setup
+
+    this.x = Math.random() * (xMax - xMin) + xMin;
+    this.y = Math.random() * (yMax - yMin) + yMin;
 
     // TODO / FIXME - randomly place and orient this Asteroid, and randomly select from one of several images
     this.image.src = "atsroid.png";
