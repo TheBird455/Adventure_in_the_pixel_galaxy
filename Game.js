@@ -400,8 +400,8 @@ class Entity2D {
     this.image = new Image(); // image for the entity
     this.orientation = 0;     // rotation in radians; 2*PI = 360º (one full turn)
     this.angular_speed = 0;   // rotational speed
-    this.lastCollissionAt = 0;
-
+    this.lastCollissionAt = (new Date).getTime();
+    
     universe.addEntity(this);
   }
 
@@ -516,7 +516,20 @@ class Asteroid extends Entity2D {
   }
 
   respondToImpactWith(otherEntity) {
+    if (otherEntity instanceof Asteroid) {
+      return; // don't break up on colliding with other asteroids..
+    }
     console.log("breakup!");
+    asteroid = new Asteroid();
+    asteroid.x = this.x;
+    asteroid.y = this.y;
+
+    asteroidSpeed = Math.random() * (maximumAsteroidVelocity - mininimumAsteroidVelocity) + mininimumAsteroidVelocity;
+    asteroidDirection = Math.random() * 2 * Math.PI;
+    asteroid.vx = asteroidSpeed * Math.cos(asteroidDirection);
+    asteroid.vy = asteroidSpeed * Math.sin(asteroidDirection);
+    asteroid.orientation = Math.PI * 2 * Math.random();
+    asteroid.angular_speed = (2 * Math.random() - 1) * maximumAsteroidRotationSpeed
   }
 }
 
