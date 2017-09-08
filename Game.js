@@ -6,35 +6,35 @@ $(document).ready(function() {
 
 var numberOfStars = 400;
 var numberOfAsteroids = 5;
-var redraw_frequency = 20; // target frames per second (FPS)
-
-myvx = 0;
-myvy = 0;
-myomega = 0;
-myangle = 0;
+var redraw_frequency = 20; // target frames per second (FPS); must be > 0
 
 // time step in seconds
 var delta_t = 10 / 1000;
 
-var xMin = -10;
-var yMin = -10;
-var xMax = 10;
-var yMax = 10;
-var delta_v = 0.1;
-var deltaomega = 0.03;
-var max_v = 10.0;
-var mininimumAsteroidVelocity    = 0.2;
-var maximumAsteroidVelocity      = 1.5;
-var maximumAsteroidRotationSpeed = .3;
-var maxomega = 3;
-var bullet_v0 = -20;
-var fire_rate = 2;
-var spaceShipImage;
+const xMin = -10;
+const yMin = -10;
+const xMax = 10;
+const yMax = 10;
+const delta_v = 0.1;
+const deltaomega = 0.03;
+const max_v = 10.0;
+const mininimumAsteroidVelocity     = 0.2;
+const maximumAsteroidVelocity       = 1.5;
+const maximumAsteroidRotationSpeed  = .3;
+const minimumTimeBetweenCollissions = 2; // seconds
+const maxomega = 3;
+const bullet_v0 = -20;
+const fire_rate = 2;
 var canvas;
 var canvasWidth;
 var canvasHeight;
 var myx, myy, myscale, myangle;
 var myvx, myvy, myomega;
+
+myvx = 0;
+myvy = 0;
+myomega = 0;
+myangle = 0;
 
 var keyMap = new Set();
 
@@ -165,7 +165,6 @@ class Velocity2D extends Vector {
     this.components = [vx, vy];
   }
 
-  //
   get x() {
     return this.components[0];
   }
@@ -322,6 +321,8 @@ class Universe {
       entity.propagate();
       entity.moveCoordinates();
     });
+
+    universe.detectCollissions();
   }
 
   redraw() {
@@ -340,10 +341,24 @@ class Universe {
     });
   }
 
+  detectCollissions() {
+    // TODO / FIXME - this could really stand to be optimized
+    for (let firstEntity of universe.entities) {
+      for (let secondEntity of universe.entities) {
+        // don't test for collissions with myself
+        if (secondEntity == firstEntity) {
+          continue;
+        }
+
+        Entity2D.detectCollission(firstEntity, secondEntity);
+      }
+    }
+  }
+
   // start the Universe
   start() {
     this.propagateTimer = setInterval(universe.propagate, delta_t * 1000); // convert delta_t to milliseconds
-    this.redrawTimer = setInterval(universe.redraw, redraw_delta_t);
+    this.redrawTimer = setInterval(universe.redraw, 1000 / redraw_frequency);
   }
 
   // end the Universe; stop timers and remove all entities
@@ -361,14 +376,37 @@ var universe = new Universe();
 // an Entity is anything that exists within the game
 // examples include ships, planets, asteroids, bullets, etc.
 class Entity2D {
+  static distance(a, b) {
+    assert(a instanceof Entity2D);
+    assert(b instanceof Entity2D);
+
+    return Vector.distance(a.coordinates, b.coordinates);
+  }
+
+  static detectCollission(a, b) {
+    assert(a instanceof Entity2D);
+    assert(b instanceof Entity2D);
+
+    const distance = Entity2D.distance(a, b);
+    if (distance < a.radius + b.radius) {
+      a.collidedWith(b);
+      b.collidedWith(a);
+    }
+  }
+
   constructor() {
     this.coordinates = new Coordinates2D(); // initial coordinates
     this.velocity = new Velocity2D();    // initial velocity
     this.image = new Image(); // image for the entity
     this.orientation = 0;     // rotation in radians; 2*PI = 360º (one full turn)
     this.angular_speed = 0;   // rotational speed
+    this.lastCollissionAt = 0;
 
     universe.addEntity(this);
+  }
+
+  get radius() {
+    return Math.sqrt(Math.pow(this.image.width, 2) + Math.pow(this.image.height, 2)) / myscale / 2 / Math.sqrt(2);
   }
 
   get dimensions() {
@@ -411,7 +449,7 @@ class Entity2D {
   propagate() {
     for (var i=0;i<this.dimensions;i++) {
       this.coordinates.components[i] += delta_t * this.velocity.components[i];
-      this.orientation    += delta_t * this.angular_speed;
+      this.orientation               += delta_t * this.angular_speed;
     }
   }
 
@@ -437,6 +475,36 @@ class Entity2D {
 
     context.translate(-centerx, -centery);
   }
+
+  collidedWith(otherEntity) {
+    const now = (new Date).getTime();
+
+    if (now - this.lastCollissionAt > minimumTimeBetweenCollissions * 1000) {
+      this.lastCollissionAt = now;
+
+      this.respondToImpactWith(otherEntity);
+    }
+  }
+
+  respondToImpactWith(otherEntity) {
+    console.log("bang!");
+  }
+}
+
+class Bullet extends Entity2D {
+  constructor() {
+    super();
+
+    this.image.src = "bullet.png"
+  }
+
+  respondToImpactWith(otherEntity) {
+    if (otherEntity instanceof Spaceship) {
+      return;
+    }
+
+    universe.entities.delete(this);
+  }
 }
 
 class Asteroid extends Entity2D {
@@ -446,18 +514,34 @@ class Asteroid extends Entity2D {
     // TODO / FIXME - randomly place and orient this Asteroid, and randomly select from one of several images
     this.image.src = "atsroid.png";
   }
+
+  respondToImpactWith(otherEntity) {
+    console.log("breakup!");
+  }
 }
 
-var bulletImage;
-// todo rotate
+class Spaceship extends Entity2D {
+  constructor() {
+    super();
 
-var bulletCoordinates = [];
-var bulletVelocities = [];
-var bulletOrientations = [];
-var asteroidCoordinates = [];
-var asteroidVelocities = [];
-var asteroidOrientations = [];
-var asteroidRotations = [];
+    this.image.src = "spaceship.png";
+  }
+
+  // move the entity forward in time
+  propagate() {
+  }
+
+  moveCoordinates() {
+    this.orientation = myangle;
+  }
+
+  respondToImpactWith(otherEntity) {
+    if (otherEntity instanceof Bullet) {
+      return;
+    }
+    console.log("explode!");
+  }
+}
 
 // TODO star colors and size
 function start() {
@@ -479,71 +563,16 @@ function start() {
     asteroid.angular_speed = (2 * Math.random() - 1) * maximumAsteroidRotationSpeed
   }
 
+  new Spaceship();
+
   myx = 0;
   myy = 0;
-  spaceShipImage = new Image();
-  spaceShipImage.src = "spaceship.png";
-
-  bulletImage = new Image();
-  bulletImage.src = "bullet.png";
 }
 
 function stop() {
   myvx = 0;
   myvy = 0;
   myomega = 0;
-}
-
-function imageRadius(image){
-  return Math.sqrt(Math.pow(image.width,2) + Math.pow(image.height,2));
-}
-
-var lastCollission = 0;
-
-function explode() {
-  now = (new Date).getTime();
-
-  if (now - lastCollission > 5) {
-    alert("bang bang you're dead!");
-    lastCollission = now;
-  }
-}
-
-function detectCollision(firstCoordinates, firstOrientation, firstImage, secondCoordinates, secondOrientation, secondImage){
-  firstRadius = imageRadius(firstImage);
-  secondRadius = imageRadius(secondImage);
-
-  firstx  = canvasx(firstCoordinates[0], firstCoordinates[1], firstImage.width, firstImage.height) + firstImage.width/2;
-  firsty  = canvasy(firstCoordinates[0], firstCoordinates[1], firstImage.width, firstImage.height) + firstImage.height/2;
-
-  secondx = canvasx(secondCoordinates[0], secondCoordinates[1], secondImage.width, secondImage.height) + secondImage.width/2;
-  secondy = canvasy(secondCoordinates[0], secondCoordinates[1], secondImage.width, secondImage.height) + secondImage.height/2;
-
-    distance = myscale*Math.sqrt(Math.pow(firstx - secondx,2) + Math.pow(firsty - secondy,2));
-    if ((distance < firstRadius + secondRadius)){
-      explode();
-      console.log(firstCoordinates, secondCoordinates, firstRadius, secondRadius, distance);
-    }
-}
-
-function detectCollisions(){
-  for (i = 0; i < asteroidCoordinates.length; i++) {
-    asteroidXY = asteroidCoordinates[i];
-    asteroidOrientation = asteroidOrientations[i];
-    for (j = 0; j < bulletCoordinates.length; j++) {
-    bulletXY = bulletCoordinates[j];
-    bulletOrientation = bulletOrientations[j];
-    detectCollision(asteroidXY, asteroidOrientation, asteroidImage, bulletXY, bulletOrientation, bulletImage);
-    }
-  }
-}
-
-function nextVelocities(vx, vy) {
-  delta_angle = myomega * (delta_t);
-  next_vx =  vx * Math.cos(delta_angle) + vy * Math.sin(delta_angle);
-  next_vy = -vx * Math.sin(delta_angle) + vy * Math.cos(delta_angle);
-
-  return [next_vx, next_vy];
 }
 
 function starting_menu() {
@@ -576,8 +605,6 @@ function starting_menu() {
   });
 }
 
-var redraw_delta_t = 50;
-
 function new_game() {
   $("#starting_menu").hide();
   $("#GameCanvas").show();
@@ -600,13 +627,13 @@ function propagate() {
   keyHandler();
   moveCoordinates();
   cleanUpBullets();
-
 }
 
 function throttled_fire() {
-  bulletCoordinates.push([0, 0]);
-  bulletVelocities.push([myvx, myvy + bullet_v0]);
-  bulletOrientations.push(myangle);
+  bullet = new Bullet();
+  bullet.vx = myvx;
+  bullet.vy = myvy + bullet_v0;
+  bullet.orientation = myangle;
 }
 
 var last_fire = 0;
