@@ -25,7 +25,7 @@ var deltaomega = 0.03;
 var max_v = 10.0;
 var maxAsteroidVelocity = 1.5;
 var minAsteroidVelocity = 0.2;
-var maximumAsteroidRotationSpeed = 1.0;
+var maximumAsteroidRotationSpeed = .3;
 var maxomega = 3;
 var bullet_v0 = -20;
 var fire_rate = 2;
@@ -56,6 +56,12 @@ function updateCoordinatesForView(entity) {
   next_y = -entity.x * Math.sin(delta_angle) + entity.y * Math.cos(delta_angle);
   entity.x = next_x;
   entity.y = next_y;
+
+  next_vx =  entity.vx * Math.cos(delta_angle) + entity.vy * Math.sin(delta_angle);
+  next_vy = -entity.vx * Math.sin(delta_angle) + entity.vy * Math.cos(delta_angle);
+
+  entity.vx = next_vx;
+  entity.vy = next_vy;
 }
 
 // ECMAScript doesn't have an assert keyword yet..
@@ -385,10 +391,26 @@ class Entity2D {
     this.coordinates.y = value;
   }
 
+  get vx() {
+    return this.velocity.x;
+  }
+
+  get vy() {
+    return this.velocity.y;
+  }
+
+  set vx(value) {
+    this.velocity.x = value;
+  }
+
+  set vy(value) {
+    this.velocity.y = value;
+  }
+
   // move the entity forward in time
   propagate() {
     for (var i=0;i<this.dimensions;i++) {
-      this.coordinates[i] += delta_t * this.velocity[i];
+      this.coordinates.components[i] += delta_t * this.velocity.components[i];
       this.orientation    += delta_t * this.angular_speed;
     }
   }
@@ -402,15 +424,16 @@ class Entity2D {
     const centery = canvasy(this.x, this.y, this.image.width, this.image.height);
 
     context.translate(centerx, centery);
-    context.rotate(-myangle)
+    context.rotate(-myangle);
+    context.rotate(this.orientation);
     context.translate(-this.image.width/2, -this.image.height/2);
     context.drawImage(
       this.image,
       0,
       0);
-      context.translate(this.image.width/2, this.image.height/2);
-
-    context.rotate(myangle)
+    context.translate(this.image.width/2, this.image.height/2);
+    context.rotate(-this.orientation);
+    context.rotate(myangle);
 
     context.translate(-centerx, -centery);
   }
@@ -419,9 +442,6 @@ class Entity2D {
 class Asteroid extends Entity2D {
   constructor() {
     super(); // run the Entity2D setup
-
-    this.x = Math.random() * (xMax - xMin) + xMin;
-    this.y = Math.random() * (yMax - yMin) + yMin;
 
     // TODO / FIXME - randomly place and orient this Asteroid, and randomly select from one of several images
     this.image.src = "atsroid.png";
@@ -443,6 +463,16 @@ var asteroidRotations = [];
 function start() {
   settings.setDifficulty(Difficulty.NORMAL);
   canvas = $("canvas");
+
+  // generate the initial asteroids
+  for (var i=0;i<numberOfAsteroids;i++) {
+    asteroid = new Asteroid();
+    asteroid.x = (xMax - xMin) * Math.random() + xMin;
+    asteroid.y = (yMax - yMin) * Math.random() + yMin;
+    asteroid.orientation = Math.PI * 2 * Math.random();
+    asteroid.angular_speed = (2 * Math.random() - 1) * maximumAsteroidRotationSpeed
+  }
+
   myx = 0;
   myy = 0;
   spaceShipImage = new Image();
@@ -450,9 +480,6 @@ function start() {
 
   bulletImage = new Image();
   bulletImage.src = "bullet.png";
-
-  asteroidImage = new Image();
-  asteroidImage.src = "atsroid.png";
 }
 
 function stop() {
@@ -602,20 +629,6 @@ function redraw() {
     context.stroke();
   }
 
-  for (i = 0; i < numberOfAsteroids; i++) {
-    asteroidX = asteroidCoordinates[i][0];
-    asteroidY = asteroidCoordinates[i][1];
-    if ((Math.abs(asteroidX - myx) > 20) || (Math.abs(asteroidY - myy) > 20)) {
-      asteroidCoordinates[i] = ([Math.random() * (xMax - xMin) + xMin, Math.random() * (yMax - yMin) + yMin]);
-      asteroidSpeed = minAsteroidVelocity + Math.random() * (maxAsteroidVelocity - minAsteroidVelocity);
-      asteroidDirection = 2 * Math.PI * Math.random();
-      asteroidVelocities[i] = ([Math.cos(asteroidDirection) * asteroidSpeed, Math.sin(asteroidDirection) * asteroidSpeed]);
-    }
-    // TODO / FIXME - add asteroid rotations, movement, and cleanup
-
-    drawImage(asteroidCoordinates[i], asteroidOrientation[i], asteroidImage);
-  }
-
   for (i = 0; i < bulletCoordinates.length; i++) {
     bullet_xy = bulletCoordinates[i];
     bulletOrientation = bulletOrientations[i];
@@ -660,18 +673,6 @@ function starting_menu() {
   });
 }
 
-function initAsteroids() {
-  for (i = 0; i < numberOfAsteroids; i++) {
-    asteroidCoordinates.push([Math.random() * (xMax - xMin) + xMin, Math.random() * (yMax - yMin) + yMin]);
-    asteroidSpeed = minAsteroidVelocity + Math.random() * (maxAsteroidVelocity - minAsteroidVelocity);
-    asteroidDirection = 2 * Math.PI * Math.random();
-
-    asteroidVelocities.push([Math.cos(asteroidDirection) * asteroidSpeed, Math.sin(asteroidDirection) * asteroidSpeed]);
-    asteroidOrientations.push(2 * Math.PI * Math.random());
-    asteroidRotations.push(maximumAsteroidRotationSpeed * Math.random());
-  }
-}
-
 var redraw_delta_t = 50;
 
 function new_game() {
@@ -682,7 +683,6 @@ function new_game() {
   $("body").css("background-image", "none");
   $("body").css("background", "black");
 
-  initAsteroids();
   $(document).keyup(function(event) {
     keyMap.delete(event.keyCode);
   });
