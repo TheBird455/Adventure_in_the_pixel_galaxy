@@ -25,6 +25,10 @@ const minimumTimeBetweenCollissions = 2; // seconds
 const maxomega = 3;
 const bullet_v0 = -20;
 const fire_rate = 2;
+
+// TODO - add more images here ["first.png", "another.png", "aThird.png"]
+const asteroidImages = ["atsroid.png"]
+
 var canvas;
 var canvasWidth;
 var canvasHeight;
@@ -527,8 +531,7 @@ class Asteroid extends Entity2D {
   constructor() {
     super(); // run the Entity2D setup
 
-    // TODO / FIXME - randomly place and orient this Asteroid, and randomly select from one of several images
-    this.image.src = "atsroid.png";
+    this.image.src = asteroidImages[Math.floor(Math.random() * asteroidImages.length)];
   }
 
   respondToImpactWith(otherEntity) {
@@ -546,6 +549,22 @@ class Asteroid extends Entity2D {
     asteroid.vy = asteroidSpeed * Math.sin(asteroidDirection);
     asteroid.orientation = Math.PI * 2 * Math.random();
     asteroid.angular_speed = (2 * Math.random() - 1) * maximumAsteroidRotationSpeed
+  }
+
+  moveCoordinates() {
+    updateCoordinatesForView(this);
+    
+    if (this.x > xMax) {
+      this.x -= (xMax - xMin);
+    } else if (this.x < xMin) {
+      this.x += (xMax - xMin);
+    }
+
+    if (this.y > yMax) {
+      this.y -= (yMax - yMin);
+    } else if (this.y < yMin) {
+      this.y += (yMax - yMin);
+    }
   }
 }
 
