@@ -4,8 +4,8 @@ $(document).ready(function() {
   start();
 });
 
-// time step in milliseconds (1/1000 of a second)
-var delta_t = 10;
+// time step in seconds
+var delta_t = 10 / 1000;
 
 const Difficulty = {
   EASY: 0,
@@ -128,7 +128,7 @@ class Velocity2D extends Vector {
 
 // an Entity is anything that exists within the game
 // examples include ships, planets, asteroids, bullets, etc.
-class Entity {
+class Entity2D {
   constructor() {
     this.coordinates = new Coordinates2D(); // initial coordinates
     this.velocity = new Vector2D();    // initial velocity
@@ -137,13 +137,19 @@ class Entity {
     this.angular_speed = 0;   // rotational speed
   }
 
+  get dimensions() {
+    return this.coordinates.dimensions;
+  }
+
   // move the entity forward in time
   propagate() {
-
+    for (i=0;i<this.dimensions;i++) {
+      this.coordinates[i] += this.velocity[i] * delta_t;
+    }
   }
 }
 
-class Asteroid extends Entity {
+class Asteroid extends Entity2D {
 
 }
 
@@ -261,12 +267,12 @@ function detectCollisions(){
 }
 
 function nextCoordinates(x, y, vx, vy) {
-  x += vx * delta_t / 1000;
-  y += vy * delta_t / 1000;
+  x += vx * delta_t;
+  y += vy * delta_t;
 
-  x -= myvx * delta_t / 1000;
-  y -= myvy * delta_t / 1000;
-  delta_angle = myomega * (delta_t / 1000);
+  x -= myvx * delta_t;
+  y -= myvy * delta_t;
+  delta_angle = myomega * (delta_t);
 
   next_x =  x * Math.cos(delta_angle) + y * Math.sin(delta_angle);
   next_y = -x * Math.sin(delta_angle) + y * Math.cos(delta_angle);
@@ -275,7 +281,7 @@ function nextCoordinates(x, y, vx, vy) {
 }
 
 function nextVelocities(vx, vy) {
-  delta_angle = myomega * (delta_t / 1000);
+  delta_angle = myomega * (delta_t);
   next_vx =  vx * Math.cos(delta_angle) + vy * Math.sin(delta_angle);
   next_vy = -vx * Math.sin(delta_angle) + vy * Math.cos(delta_angle);
 
@@ -287,7 +293,7 @@ function cleanUpBullets() {
 }
 
 function moveCoordinates() {
-  myangle += myomega * delta_t / 1000;
+  myangle += myomega * delta_t;
   for (i = 0; i < numberOfStars; i++) {
     starx = starCoordinates[i][0];
     stary = starCoordinates[i][1];
@@ -309,7 +315,7 @@ function moveCoordinates() {
   for (i = 0; i < asteroidCoordinates.length; i++) {
     asteroidRotation = asteroidRotations[i];
     asteroidOrientation = asteroidOrientations[i];
-    asteroidOrientations[i] = asteroidOrientation + asteroidRotation * delta_t / 1000;
+    asteroidOrientations[i] = asteroidOrientation + asteroidRotation * delta_t;
     asteroidX = asteroidCoordinates[i][0];
     asteroidY = asteroidCoordinates[i][1];
 
@@ -468,7 +474,7 @@ function new_game() {
   $(document).keydown(function(event) {
     keyMap.add(event.keyCode);
   });
-  timer = setInterval(propagate, delta_t);
+  timer = setInterval(propagate, delta_t * 1000); // convert delta_t to milliseconds
   redrawTimer = setInterval(redraw, redraw_delta_t);
 }
 
