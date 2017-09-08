@@ -194,7 +194,7 @@ function redraw(){
     asteroidX = canvasx(asteroidX, asteroidY, asteroidImage.width, asteroidImage.height);
     asteroidY = canvasy(asteroidX, asteroidY, asteroidImage.width, asteroidImage.height);
     asteroidOrientation = asteroidOrientations[i];
-    context.translate(asteroidX+asteroidImage.width/2, asteroidY+asteroidImage.height/2);
+    context.translate(asteroidX+asteroidImage.width/2, asteroidY+ asteroidImage.height/2);
     context.rotate(-myangle);
     context.rotate(asteroidOrientation);
     context.drawImage(
@@ -202,8 +202,7 @@ function redraw(){
       0,
       0);
 
-    context.rotate(-asteroidOrientation);
-
+      context.rotate(-asteroidOrientation);
     context.rotate(myangle);
     context.translate(-asteroidX-asteroidImage.width/2, -asteroidY-asteroidImage.height/2);
   }
