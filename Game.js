@@ -13,6 +13,9 @@ myvy = 0;
 myomega = 0;
 myangle = 0;
 
+// time step in seconds
+var delta_t = 10 / 1000;
+
 var xMin = -10;
 var yMin = -10;
 var xMax = 10;
@@ -33,6 +36,8 @@ var canvasHeight;
 var myx, myy, myscale, myangle;
 var myvx, myvy, myomega;
 
+var keyMap = new Set();
+
 // TODO / FIXME - refactor these to Universe or perhaps View
 function canvasx(x, y, myWidth, myHeight) {
   return (x) * myscale + canvasWidth / 2 - myWidth / 2;
@@ -40,6 +45,17 @@ function canvasx(x, y, myWidth, myHeight) {
 
 function canvasy(x, y, myWidth, myHeight) {
   return (y) * myscale + canvasHeight / 2 - myHeight / 2;
+}
+
+function nextCoordinates(entity) {
+  entity.x -= myvx * delta_t;
+  entity.y -= myvy * delta_t;
+  delta_angle = myomega * delta_t;
+
+  next_x =  entity.x * Math.cos(delta_angle) + entity.y * Math.sin(delta_angle);
+  next_y = -entity.x * Math.sin(delta_angle) + entity.y * Math.cos(delta_angle);
+  entity.x = next_x;
+  entity.y = next_y;
 }
 
 // ECMAScript doesn't have an assert keyword yet..
@@ -51,9 +67,6 @@ function assert(value) {
   console.trace();
   throw "assert failed"
 }
-
-// time step in seconds
-var delta_t = 10 / 1000;
 
 const Difficulty = {
   EASY: 0,
@@ -179,6 +192,18 @@ class Star {
   get y() {
     return this.coordinates.y;
   }
+
+  set x(value) {
+    this.coordinates.x = value;
+  }
+
+  set y(value) {
+    this.coordinates.y = value;
+  }
+
+  moveCoordinates(){
+    nextCoordinates(this);
+  }
 }
 
 class Starfield  {
@@ -200,6 +225,69 @@ class Starfield  {
       context.stroke();
     });
   }
+
+  moveCoordinates() {
+    this.stars.forEach(function(star) {
+      star.moveCoordinates();
+    });
+  }
+}
+
+function keyHandler() {
+  for (let keyCode of keyMap.values()) {
+    if (keyCode == 80) {
+      if (Paused) {
+        Resume();
+      } else {
+        Pause();
+      }
+    }
+
+    switch (keyCode) {
+      case 37: //left
+        myomega -= deltaomega;
+        break;
+      case 39: //right
+        myomega += deltaomega;
+        break;
+      case 40: //down
+        myvy += delta_v;
+        break;
+      case 38: //up
+        myvy -= delta_v;
+        break;
+      case 32:
+        fire();
+        break;
+      case 88:
+        stop();
+        break;
+    }
+
+    if (myvx > max_v) {
+      myvx = max_v;
+    }
+
+    if (myvx < -max_v) {
+      myvx = -max_v;
+    }
+
+    if (myvy > max_v) {
+      myvy = max_v;
+    }
+
+    if (myvy < -max_v) {
+      myvy = -max_v;
+    }
+
+    if (myomega > maxomega) {
+      myomega = +maxomega;
+    }
+
+    if (myomega < -maxomega) {
+      myomega = -maxomega;
+    }
+  }
 }
 
 // TODO / FIXME - make Universe a singleton
@@ -218,9 +306,15 @@ class Universe {
   }
 
   propagate() {
-    for (let entity of universe.entities) {
+    // move the Universe forward in time
+    keyHandler();
+
+    universe.starfield.moveCoordinates();
+
+    universe.entities.forEach(function(entity){
       entity.propagate();
-    }
+      entity.moveCoordinates();
+    });
   }
 
   redraw() {
@@ -237,7 +331,7 @@ class Universe {
 
   // start the Universe
   start() {
-    this.propagateTimer = setInterval(universe.propagate, delta_t * 50* 1000); // convert delta_t to milliseconds
+    this.propagateTimer = setInterval(universe.propagate, delta_t * 1000); // convert delta_t to milliseconds
     this.redrawTimer = setInterval(universe.redraw, redraw_delta_t);
   }
 
@@ -272,11 +366,14 @@ class Entity2D {
 
   // move the entity forward in time
   propagate() {
-    console.log("prop");
     for (var i=0;i<this.dimensions;i++) {
       this.coordinates[i] += delta_t * this.velocity[i];
       this.orientation    += delta_t * this.angular_speed;
     }
+  }
+
+  moveCoordinates() {
+    console.log("TODO - moveCoordinates");
   }
 
   draw(context, center, orientation, scale) {
@@ -321,8 +418,6 @@ function start() {
 
   asteroidImage = new Image();
   asteroidImage.src = "atsroid.png";
-
-
 }
 
 function stop() {
@@ -375,20 +470,6 @@ function detectCollisions(){
   }
 }
 
-function nextCoordinates(x, y, vx, vy) {
-  x += vx * delta_t;
-  y += vy * delta_t;
-
-  x -= myvx * delta_t;
-  y -= myvy * delta_t;
-  delta_angle = myomega * (delta_t);
-
-  next_x =  x * Math.cos(delta_angle) + y * Math.sin(delta_angle);
-  next_y = -x * Math.sin(delta_angle) + y * Math.cos(delta_angle);
-
-  return [next_x, next_y];
-}
-
 function nextVelocities(vx, vy) {
   delta_angle = myomega * (delta_t);
   next_vx =  vx * Math.cos(delta_angle) + vy * Math.sin(delta_angle);
@@ -407,7 +488,7 @@ function moveCoordinates() {
     starx = starCoordinates[i][0];
     stary = starCoordinates[i][1];
 
-    starCoordinates[i] = nextCoordinates(starx, stary, 0, 0);
+    starCoordinates[i] = nextCoordinates(starx, stary);
   }
 
   for (i = 0; i < bulletCoordinates.length; i++) {
@@ -556,7 +637,6 @@ function initAsteroids() {
   }
 }
 
-var keyMap = new Set();
 var redraw_delta_t = 50;
 
 function new_game() {
@@ -599,62 +679,5 @@ function fire() {
   if (current_time - last_fire > bullet_period) {
     throttled_fire();
     last_fire = current_time;
-  }
-}
-
-function keyHandler() {
-  for (let keyCode of keyMap.values()) {
-    if (keyCode == 80) {
-      if (Paused) {
-        Resume();
-      } else {
-        Pause();
-      }
-    }
-    var ship_delta = 1;
-    switch (keyCode) {
-      case 37: //left
-        myomega -= deltaomega;
-        break;
-      case 39: //right
-        myomega += deltaomega;
-        break;
-      case 40: //down
-        myvy += delta_v;
-        break;
-      case 38: //up
-        myvy -= delta_v;
-        break;
-      case 32:
-        fire();
-        break;
-      case 88:
-        stop();
-        break;
-    }
-
-    if (myvx > max_v) {
-      myvx = max_v;
-    }
-
-    if (myvx < -max_v) {
-      myvx = -max_v;
-    }
-
-    if (myvy > max_v) {
-      myvy = max_v;
-    }
-
-    if (myvy < -max_v) {
-      myvy = -max_v;
-    }
-
-    if (myomega > maxomega) {
-      myomega = +maxomega;
-    }
-
-    if (myomega < -maxomega) {
-      myomega = -maxomega;
-    }
   }
 }
