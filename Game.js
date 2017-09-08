@@ -4,6 +4,44 @@ $(document).ready(function() {
   start();
 });
 
+var numberOfStars = 400;
+var numberOfAsteroids = 5;
+var redraw_frequency = 20; // target frames per second (FPS)
+
+myvx = 0;
+myvy = 0;
+myomega = 0;
+myangle = 0;
+
+var xMin = -10;
+var yMin = -10;
+var xMax = 10;
+var yMax = 10;
+var delta_v = 0.1;
+var deltaomega = 0.03;
+var max_v = 10.0;
+var maxAsteroidVelocity = 1.5;
+var minAsteroidVelocity = 0.2;
+var maximumAsteroidRotationSpeed = 1.0;
+var maxomega = 3;
+var bullet_v0 = -20;
+var fire_rate = 2;
+var spaceShipImage;
+var canvas;
+var canvasWidth;
+var canvasHeight;
+var myx, myy, myscale, myangle;
+var myvx, myvy, myomega;
+
+// TODO / FIXME - refactor these to Universe or perhaps View
+function canvasx(x, y, myWidth, myHeight) {
+  return (x) * myscale + canvasWidth / 2 - myWidth / 2;
+}
+
+function canvasy(x, y, myWidth, myHeight) {
+  return (y) * myscale + canvasHeight / 2 - myHeight / 2;
+}
+
 // ECMAScript doesn't have an assert keyword yet..
 function assert(value) {
   if (value) {
@@ -46,74 +84,6 @@ class Settings {
 }
 
 var settings = new Settings();
-var redraw_frequency = 20; // target frames per second (FPS)
-
-var starCoordinates = []; // TODO / FIXME - refactor to a Stars class
-
-// TODO / FIXME - make Universe a singleton
-class Universe {
-  constructor() {
-    this.entities = new Set();
-  }
-
-  addEntity(entity) {
-    this.entities.add(entity);
-  }
-
-  removeEntity(entity) {
-    this.entities.delete(entity);
-  }
-
-  propagate() {
-    for (let entity of universe.entities) {
-      entity.propagate();
-    }
-  }
-
-  redraw() {
-    canvasWidth = canvas.width();
-    canvasHeight = canvas.height();
-    canvas.attr("width", canvasWidth);
-    canvas.attr("height", canvasHeight);
-    myscale = canvasWidth / (xMax - xMin);
-    var context = canvas.get(0).getContext("2d");
-    context.imageSmoothingEnabled = false;
-
-    for (i = 0; i < numberOfStars; i++) {
-      const starRadius = 1;
-      const starx = starCoordinates[i][0];
-      const stary = starCoordinates[i][1];
-
-      if ((Math.abs(starx - myx) > 20) || (Math.abs(stary - myy) > 20)) {
-        starCoordinates[i] = ([Math.random() * (xMax - xMin) + xMin + myx, Math.random() * (yMax - yMin) + yMin + myy]);
-      }
-
-      const centerx = canvasx(starx, stary, 2 * starRadius, 2 * starRadius);
-      const centery = canvasy(starx, stary, 2 * starRadius, 2 * starRadius);
-      context.beginPath();
-      context.arc(centerx, centery, starRadius, 0, 2 * Math.PI, false);
-      context.strokeStyle = "#888";
-      context.stroke();
-    }
-  }
-
-  // start the Universe
-  start() {
-    this.propagateTimer = setInterval(universe.propagate, delta_t * 50* 1000); // convert delta_t to milliseconds
-    this.redrawTimer = setInterval(universe.redraw, redraw_delta_t);
-  }
-
-  // end the Universe; stop timers and remove all entities
-  end() {
-    clearInterval(this.propagate_timer);
-
-    for (let entity of this.entities) {
-      this.removeEntity(entity);
-    }
-  }
-}
-
-var universe = new Universe();
 
 // a generic Vector class for holding vectors and doing math with them
 class Vector {
@@ -194,6 +164,95 @@ class Velocity2D extends Vector {
   }
 }
 
+class Star {
+  constructor() {
+    this.coordinates = new Coordinates2D();
+    this.coordinates.x = Math.random() * (xMax - xMin) + xMin;
+    this.coordinates.y = Math.random() * (yMax - yMin) + yMin;
+    this.radius = 1;
+  }
+
+  get x() {
+    return this.coordinates.x;
+  }
+
+  get y() {
+    return this.coordinates.y;
+  }
+}
+
+class Starfield  {
+  constructor() {
+    this.stars = new Set()
+
+    for (var i=0;i<numberOfStars;i++) {
+      this.stars.add(new Star());
+    }
+  }
+
+  draw(context) {
+    this.stars.forEach(function(star) {
+      const centerx = canvasx(star.x, star.y, 2 * star.radius, 2 * star.radius);
+      const centery = canvasy(star.x, star.y, 2 * star.radius, 2 * star.radius);
+      context.beginPath();
+      context.arc(centerx, centery, star.radius, 0, 2 * Math.PI, false);
+      context.strokeStyle = "#888";
+      context.stroke();
+    });
+  }
+}
+
+// TODO / FIXME - make Universe a singleton
+class Universe {
+  constructor() {
+    this.starfield = new Starfield();
+    this.entities = new Set();
+  }
+
+  addEntity(entity) {
+    this.entities.add(entity);
+  }
+
+  removeEntity(entity) {
+    this.entities.delete(entity);
+  }
+
+  propagate() {
+    for (let entity of universe.entities) {
+      entity.propagate();
+    }
+  }
+
+  redraw() {
+    canvasWidth = canvas.width();
+    canvasHeight = canvas.height();
+    canvas.attr("width", canvasWidth);
+    canvas.attr("height", canvasHeight);
+    myscale = canvasWidth / (xMax - xMin);
+    var context = canvas.get(0).getContext("2d");
+    context.imageSmoothingEnabled = false;
+
+    universe.starfield.draw(context);
+  }
+
+  // start the Universe
+  start() {
+    this.propagateTimer = setInterval(universe.propagate, delta_t * 50* 1000); // convert delta_t to milliseconds
+    this.redrawTimer = setInterval(universe.redraw, redraw_delta_t);
+  }
+
+  // end the Universe; stop timers and remove all entities
+  end() {
+    clearInterval(this.propagate_timer);
+
+    for (let entity of this.entities) {
+      this.removeEntity(entity);
+    }
+  }
+}
+
+var universe = new Universe();
+
 // an Entity is anything that exists within the game
 // examples include ships, planets, asteroids, bullets, etc.
 class Entity2D {
@@ -213,6 +272,7 @@ class Entity2D {
 
   // move the entity forward in time
   propagate() {
+    console.log("prop");
     for (var i=0;i<this.dimensions;i++) {
       this.coordinates[i] += delta_t * this.velocity[i];
       this.orientation    += delta_t * this.angular_speed;
@@ -220,7 +280,6 @@ class Entity2D {
   }
 
   draw(context, center, orientation, scale) {
-
     context.drawImage(
       this.image,
       0,
@@ -237,42 +296,9 @@ class Asteroid extends Entity2D {
   }
 }
 
-var canvas;
-var canvasWidth;
-var canvasHeight;
-var myx, myy, myscale, myangle;
-var myvx, myvy, myomega;
-
-myvx = 0;
-myvy = 0;
-myomega = 0;
-myangle = 0;
-
-// min/max for stars not canvas
-var xMin = -10;
-var yMin = -10;
-var xMax = 10;
-var yMax = 10;
-var delta_v = 0.1;
-var deltaomega = 0.03;
-var max_v = 10.0;
-var maxAsteroidVelocity = 1.5;
-var minAsteroidVelocity = 0.2;
-var maximumAsteroidRotationSpeed = 1.0;
-var maxomega = 3;
-var bullet_v0 = -20;
-var fire_rate = 2;
-var spaceShipImage;
-
 var bulletImage;
 // todo rotate
-function canvasx(x, y, myWidth, myHeight) {
-  return (x) * myscale + canvasWidth / 2 - myWidth / 2;
-}
 
-function canvasy(x, y, myWidth, myHeight) {
-  return (y) * myscale + canvasHeight / 2 - myHeight / 2;
-}
 var bulletCoordinates = [];
 var bulletVelocities = [];
 var bulletOrientations = [];
@@ -518,15 +544,6 @@ function starting_menu() {
   });
 }
 
-var numberOfStars = 400;
-var numberOfAsteroids = 5;
-
-function initStarfield() {
-  for (i = 0; i < numberOfStars; i++) {
-    starCoordinates.push([Math.random() * (xMax - xMin) + xMin, Math.random() * (yMax - yMin) + yMin])
-  }
-}
-
 function initAsteroids() {
   for (i = 0; i < numberOfAsteroids; i++) {
     asteroidCoordinates.push([Math.random() * (xMax - xMin) + xMin, Math.random() * (yMax - yMin) + yMin]);
@@ -549,7 +566,7 @@ function new_game() {
   $("#music1")[0].pause();
   $("body").css("background-image", "none");
   $("body").css("background", "black");
-  initStarfield();
+
   initAsteroids();
   $(document).keyup(function(event) {
     keyMap.delete(event.keyCode);
