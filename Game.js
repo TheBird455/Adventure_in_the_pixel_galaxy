@@ -47,7 +47,7 @@ function canvasy(x, y, myWidth, myHeight) {
   return (y) * myscale + canvasHeight / 2 - myHeight / 2;
 }
 
-function updateCoordinates(entity) {
+function updateCoordinatesForView(entity) {
   entity.x -= myvx * delta_t;
   entity.y -= myvy * delta_t;
   delta_angle = myomega * delta_t;
@@ -202,7 +202,7 @@ class Star {
   }
 
   moveCoordinates(){
-    updateCoordinates(this);
+    updateCoordinatesForView(this);
   }
 }
 
@@ -368,6 +368,22 @@ class Entity2D {
     return this.coordinates.dimensions;
   }
 
+  get x() {
+    return this.coordinates.x;
+  }
+
+  get y() {
+    return this.coordinates.y;
+  }
+
+  set x(value) {
+    this.coordinates.x = value;
+  }
+
+  set y(value) {
+    this.coordinates.y = value;
+  }
+
   // move the entity forward in time
   propagate() {
     for (var i=0;i<this.dimensions;i++) {
@@ -377,14 +393,19 @@ class Entity2D {
   }
 
   moveCoordinates() {
-    updateCoordinates(self);
+    updateCoordinatesForView(this);
   }
 
-  draw(context, center, orientation, scale) {
+  draw(context) {
+    const centerx = canvasx(this.x, this.y, this.image.width, this.image.height);
+    const centery = canvasy(this.x, this.y, this.image.width, this.image.height);
+
+    context.translate(centerx, centery);
     context.drawImage(
       this.image,
       0,
       0);
+      context.translate(-centerx, -centery);
   }
 }
 
