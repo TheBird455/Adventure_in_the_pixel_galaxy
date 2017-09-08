@@ -4,6 +4,16 @@ $(document).ready(function() {
   start();
 });
 
+// ECMAScript doesn't have an assert keyword yet..
+function assert(value) {
+  if (value) {
+    return;
+  }
+
+  console.trace();
+  throw "assert failed"
+}
+
 // time step in seconds
 var delta_t = 10 / 1000;
 
@@ -37,15 +47,28 @@ class Settings {
 
 var settings = new Settings();
 
-// ECMAScript doesn't have an assert keyword yet..
-function assert(value) {
-  if (value) {
-    return;
+// TODO / FIXME - make Universe a singleton
+class Universe {
+  constructor() {
+    this.entities = new Set();
   }
 
-  console.trace();
-  throw "assert failed"
+  addEntity(entity) {
+    this.entities.add(entity);
+  }
+
+  removeEntity(entity) {
+    this.entities.delete(entity);
+  }
+
+  propagate() {
+    for (let entity of this.entities) {
+      entity.propagate();
+    }
+  }
 }
+
+var universe = new Universe();
 
 // a generic Vector class for holding vectors and doing math with them
 class Vector {
@@ -131,10 +154,12 @@ class Velocity2D extends Vector {
 class Entity2D {
   constructor() {
     this.coordinates = new Coordinates2D(); // initial coordinates
-    this.velocity = new Vector2D();    // initial velocity
+    this.velocity = new Velocity2D();    // initial velocity
     this.image = new Image(); // image for the entity
     this.orientation = 0;     // rotation in radians; 2*PI = 360º (one full turn)
     this.angular_speed = 0;   // rotational speed
+
+    universe.addEntity(this);
   }
 
   get dimensions() {
@@ -143,14 +168,28 @@ class Entity2D {
 
   // move the entity forward in time
   propagate() {
-    for (i=0;i<this.dimensions;i++) {
-      this.coordinates[i] += this.velocity[i] * delta_t;
+    for (var i=0;i<this.dimensions;i++) {
+      this.coordinates[i] += delta_t * this.velocity[i];
+      this.orientation    += delta_t * this.angular_speed;
     }
+  }
+
+  draw(context, center, orientation, scale) {
+
+    context.drawImage(
+      this.image,
+      0,
+      0);
   }
 }
 
 class Asteroid extends Entity2D {
+  constructor() {
+    super(); // run the Entity2D setup
 
+    // TODO / FIXME - randomly place and orient this Asteroid, and randomly select from one of several images
+    this.image.src = "atsroid.png";
+  }
 }
 
 var canvas;
