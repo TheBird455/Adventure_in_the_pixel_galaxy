@@ -13,8 +13,10 @@ var delta_t = 10 / 1000;
 
 const xMin = -10;
 const yMin = -10;
+const zMin = -10;
 const xMax = 10;
 const yMax = 10;
+const zMax = 10;
 const delta_v = 0.1;
 const deltaomega = 0.03;
 const max_v = 10.0;
@@ -136,6 +138,38 @@ class Vector {
   }
 }
 
+class Coordinates3D extends Vector {
+  constructor(x = 0, y = 0, z = 0) {
+    super();
+
+    this.components = [x, y, z];
+  }
+
+  get x() {
+    return this.components[0];
+  }
+
+  get y() {
+    return this.components[1];
+  }
+
+  get z() {
+    return this.components[2];
+  }
+
+  set x(value) {
+    this.components[0] = value;
+  }
+
+  set y(value) {
+    this.components[1] = value;
+  }
+
+  set z(value) {
+    this.components[2] = value;
+  }
+}
+
 class Coordinates2D extends Vector {
   // this is called when you make a new Coordinates2D
   constructor(x = 0, y = 0) {
@@ -188,9 +222,10 @@ class Velocity2D extends Vector {
 
 class Star {
   constructor() {
-    this.coordinates = new Coordinates2D();
+    this.coordinates = new Coordinates3D();
     this.coordinates.x = Math.random() * (xMax - xMin) + xMin;
     this.coordinates.y = Math.random() * (yMax - yMin) + yMin;
+    this.coordinates.z = Math.random() * (zMax - zMin) + zMin;
     this.radius = 1;
   }
 
@@ -202,12 +237,20 @@ class Star {
     return this.coordinates.y;
   }
 
+  get z() {
+    return this.coordinates.z;
+  }
+
   set x(value) {
     this.coordinates.x = value;
   }
 
   set y(value) {
     this.coordinates.y = value;
+  }
+
+  set z(value) {
+    this.coordinates.z = value;
   }
 
   moveCoordinates(){
@@ -553,7 +596,7 @@ class Asteroid extends Entity2D {
 
   moveCoordinates() {
     updateCoordinatesForView(this);
-    
+
     if (this.x > xMax) {
       this.x -= (xMax - xMin);
     } else if (this.x < xMin) {
