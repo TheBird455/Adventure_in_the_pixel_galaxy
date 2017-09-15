@@ -267,6 +267,12 @@ class Star {
     } else if (this.y < yMin) {
       this.y += (yMax - yMin);
     }
+
+    if (this.z > zMax) {
+      this.z -= (zMax - zMin);
+    } else if (this.z < zMin) {
+      this.z += (zMax - zMin);
+    }
   }
 }
 
