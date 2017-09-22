@@ -29,7 +29,8 @@ const bullet_v0 = -20;
 const fire_rate = 2;
 
 // TODO - add more images here ["first.png", "another.png", "aThird.png"]
-const asteroidImages = ["asteroid.png", "asteroid 2.png"]
+const asteroidImages = ["asteroid.png", "asteroid 2.png"];
+const spaceshipImages = ["spaceship.png"];
 
 var canvas;
 var canvasWidth;
@@ -621,7 +622,8 @@ class Spaceship extends Entity2D {
   constructor() {
     super();
 
-    this.image.src = "spaceship.png";
+    this.image.src = spaceshipImages[Math.floor(Math.random() * spaceshipImages.length)];
+
   }
 
   // move the entity forward in time
