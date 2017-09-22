@@ -44,15 +44,6 @@ myangle = 0;
 
 var keyMap = new Set();
 
-// TODO / FIXME - refactor these to Universe or perhaps View
-function canvasx(x, y, myWidth, myHeight) {
-  return (x) * myscale + canvasWidth / 2;// + myWidth / 2;
-}
-
-function canvasy(x, y, myWidth, myHeight) {
-  return (y) * myscale+ canvasHeight / 2;// + myHeight / 2;
-}
-
 function updateCoordinatesForView(entity) {
   entity.x -= myvx * delta_t;
   entity.y -= myvy * delta_t;
@@ -195,6 +186,15 @@ class Coordinates2D extends Vector {
   }
 }
 
+function canvas_xy(coordinates, myWidth, myHeight) {
+  canvas_coordinatees = new Coordinates2D();
+
+  canvas_coordinatees.x = (coordinates.x) * myscale +  canvasWidth / 2;// + myWidth / 2;
+  canvas_coordinatees.y = (coordinates.y) * myscale + canvasHeight / 2;// + myWidth / 2;
+
+  return canvas_coordinatees
+}
+
 class Velocity2D extends Vector {
   // this is called when you make a new Velocity2D
   constructor(vx = 0, vy = 0) {
@@ -267,12 +267,6 @@ class Star {
     } else if (this.y < yMin) {
       this.y += (yMax - yMin);
     }
-
-    if (this.z > zMax) {
-      this.z -= (zMax - zMin);
-    } else if (this.z < zMin) {
-      this.z += (zMax - zMin);
-    }
   }
 }
 
@@ -287,10 +281,9 @@ class Starfield  {
 
   draw(context) {
     this.stars.forEach(function(star) {
-      const centerx = canvasx(star.x, star.y, 2 * star.radius, 2 * star.radius);
-      const centery = canvasy(star.x, star.y, 2 * star.radius, 2 * star.radius);
+      const center_coordinates = canvas_xy(star.coordinates,2 * star.radius, 2 * star.radius);
       context.beginPath();
-      context.arc(centerx, centery, star.radius, 0, 2 * Math.PI, false);
+      context.arc(center_coordinates.x, center_coordinates.y, star.radius, 0, 2 * Math.PI, false);
       context.strokeStyle = "#888";
       context.stroke();
     });
@@ -523,10 +516,9 @@ class Entity2D {
   }
 
   draw(context) {
-    const centerx = canvasx(this.x, this.y, this.image.width, this.image.height);
-    const centery = canvasy(this.x, this.y, this.image.width, this.image.height);
+    const center_coordinates = canvas_xy(this.coordinates, this.image.width, this.image.height);
 
-    context.translate(centerx, centery);
+    context.translate(center_coordinates.x, center_coordinates.y);
     context.rotate(-myangle);
     context.rotate(this.orientation);
     context.translate(-this.image.width/2, -this.image.height/2);
@@ -538,7 +530,7 @@ class Entity2D {
     context.rotate(-this.orientation);
     context.rotate(myangle);
 
-    context.translate(-centerx, -centery);
+    context.translate(-center_coordinates.x, -center_coordinates.y);
   }
 
   collidedWith(otherEntity) {
