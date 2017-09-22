@@ -13,7 +13,7 @@ var delta_t = 10 / 1000;
 
 const xMin = -10;
 const yMin = -10;
-const zMin = -10;
+const zMin = 1;
 const xMax = 10;
 const yMax = 10;
 const zMax = 10;
@@ -189,8 +189,14 @@ class Coordinates2D extends Vector {
 function canvas_xy(coordinates, myWidth, myHeight) {
   canvas_coordinatees = new Coordinates2D();
 
-  canvas_coordinatees.x = (coordinates.x) * myscale +  canvasWidth / 2;// + myWidth / 2;
-  canvas_coordinatees.y = (coordinates.y) * myscale + canvasHeight / 2;// + myWidth / 2;
+  parallax_scale = myscale;
+
+  if (coordinates instanceof Coordinates3D) {
+    parallax_scale /= coordinates.z;
+  }
+
+  canvas_coordinatees.x = (coordinates.x) * parallax_scale +  canvasWidth / 2;// + myWidth / 2;
+  canvas_coordinatees.y = (coordinates.y) * parallax_scale + canvasHeight / 2;// + myWidth / 2;
 
   return canvas_coordinatees
 }
@@ -223,9 +229,10 @@ class Velocity2D extends Vector {
 class Star {
   constructor() {
     this.coordinates = new Coordinates3D();
-    this.coordinates.x = Math.random() * (xMax - xMin) + xMin;
-    this.coordinates.y = Math.random() * (yMax - yMin) + yMin;
     this.coordinates.z = Math.random() * (zMax - zMin) + zMin;
+
+    this.coordinates.x = (Math.random() * (xMax - xMin) + xMin) * this.coordinates.z;
+    this.coordinates.y = (Math.random() * (yMax - yMin) + yMin) * this.coordinates.z;
     this.radius = 1;
   }
 
@@ -256,16 +263,17 @@ class Star {
   moveCoordinates(){
     updateCoordinatesForView(this);
 
-    if (this.x > xMax) {
-      this.x -= (xMax - xMin);
-    } else if (this.x < xMin) {
-      this.x += (xMax - xMin);
+    const scale_factor = this.z;
+    if (this.x > xMax * scale_factor) {
+      this.x -= (xMax - xMin)* scale_factor;
+    } else if (this.x < xMin * scale_factor) {
+      this.x += (xMax - xMin)* scale_factor;
     }
 
-    if (this.y > yMax) {
-      this.y -= (yMax - yMin);
-    } else if (this.y < yMin) {
-      this.y += (yMax - yMin);
+    if (this.y > yMax * scale_factor) {
+      this.y -= (yMax - yMin)* scale_factor;
+    } else if (this.y < yMin * scale_factor) {
+      this.y += (yMax - yMin)* scale_factor;
     }
   }
 }
