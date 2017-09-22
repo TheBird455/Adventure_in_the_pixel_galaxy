@@ -27,6 +27,7 @@ const minimumTimeBetweenCollissions = 2; // seconds
 const maxomega = 3;
 const bullet_v0 = -20;
 const fire_rate = 2;
+const pause_frequency = 7;
 
 // TODO - add more images here ["first.png", "another.png", "aThird.png"]
 const asteroidImages = ["asteroid.png", "asteroid 2.png"];
@@ -37,6 +38,7 @@ var canvasWidth;
 var canvasHeight;
 var myx, myy, myscale, myangle;
 var myvx, myvy, myomega;
+var paused = false;
 
 myvx = 0;
 myvy = 0;
@@ -76,6 +78,23 @@ const Difficulty = {
   EASY: 0,
   NORMAL: 1,
   HARD: 2,
+}
+
+
+function throttled_toggle_pause(){
+  paused = !paused;
+}
+
+var last_toggle_paused = 0 ;
+var min_pause_period = 1000 / pause_frequency;
+
+function toggle_pause(){
+  current_time = (new Date()).getTime();
+  if (current_time - last_toggle_paused > min_pause_period){
+    throttled_toggle_pause();
+    last_toggle_paused = current_time;
+
+  }
 }
 
 class Settings {
@@ -307,13 +326,6 @@ class Starfield  {
 
 function keyHandler() {
   for (let keyCode of keyMap.values()) {
-    if (keyCode == 80) {
-      if (Paused) {
-        Resume();
-      } else {
-        Pause();
-      }
-    }
 
     switch (keyCode) {
       case 37: //left
@@ -333,6 +345,9 @@ function keyHandler() {
         break;
       case 88:
         stop();
+        break;
+      case 80:
+        toggle_pause();
         break;
     }
 
@@ -380,6 +395,11 @@ class Universe {
   propagate() {
     // move the Universe forward in time
     keyHandler();
+
+    if (paused) {
+      return;
+    }
+
     myangle += myomega * delta_t;
 
     universe.starfield.moveCoordinates();
@@ -722,16 +742,9 @@ function new_game() {
   universe.start();
 }
 
-function propagate() {
-  keyHandler();
-  moveCoordinates();
-  cleanUpBullets();
-}
-
 function throttled_fire() {
   bullet = new Bullet();
 }
-
 var last_fire = 0;
 var bullet_period = 1000 / fire_rate;
 // debounced fire limited to once per bullet_period (fire_rate per second)
