@@ -29,7 +29,7 @@ const bullet_v0 = -20;
 const fire_rate = 2;
 
 // TODO - add more images here ["first.png", "another.png", "aThird.png"]
-const asteroidImages = ["atsroid.png"]
+const asteroidImages = ["asteroid.png", "asteroid 2.png"]
 
 var canvas;
 var canvasWidth;
