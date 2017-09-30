@@ -216,8 +216,8 @@ function canvas_xy(coordinates, myWidth, myHeight) {
     parallax_scale /= coordinates.z;
   }
 
-  canvas_coordinatees.x = (coordinates.x) * parallax_scale +  canvasWidth / 2;// + myWidth / 2;
-  canvas_coordinatees.y = (coordinates.y) * parallax_scale + canvasHeight / 2;// + myWidth / 2;
+  canvas_coordinatees.x = Math.floor ((coordinates.x) * parallax_scale +  canvasWidth / 2);// + myWidth / 2;
+  canvas_coordinatees.y = Math.floor ((coordinates.y) * parallax_scale + canvasHeight / 2);// + myWidth / 2;
 
   return canvas_coordinatees
 }

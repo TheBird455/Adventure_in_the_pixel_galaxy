@@ -125,8 +125,8 @@ nav {
   color:lime;
 }
 
-progress#healthBar{
-  color:#734;
-  background-color:#000;
-  border:red;
+#healthBar{
+  color:lime;
+  background:black;
+  z-index: 10;
 }
