@@ -125,8 +125,13 @@ nav {
   color:lime;
 }
 
-#healthBar{
+#healthBar, progress::-webkit-progress-bar {
   color:lime;
-  background:black;
+  background:red;
   z-index: 10;
+}
+
+progress::-webkit-progress-value {
+  color: orange;
+  background-color: blue;
 }
