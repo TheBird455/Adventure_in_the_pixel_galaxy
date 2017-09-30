@@ -19,6 +19,7 @@ const yMax = 10;
 const zMax = 10;
 const delta_v = 0.1;
 const deltaomega = 0.03;
+const delta_dammage = 0.1;
 const max_v = 10.0;
 const mininimumAsteroidVelocity     = 0.2;
 const maximumAsteroidVelocity       = 1.5;
@@ -29,7 +30,7 @@ const bullet_v0 = -20;
 const fire_rate = 2;
 const pause_frequency = 7;
 
-// TODO - add more images here ["first.png", "another.png", "aThird.png"]
+
 const asteroidImages = ["asteroid.png", "asteroid 2.png"];
 const spaceshipImages = ["spaceship.png"];
 
@@ -253,7 +254,7 @@ class Star {
 
     this.coordinates.x = (Math.random() * (xMax - xMin) + xMin) * this.coordinates.z;
     this.coordinates.y = (Math.random() * (yMax - yMin) + yMin) * this.coordinates.z;
-    this.radius = 1;
+    this.radius = 1; // TODO
   }
 
   get x() {
@@ -488,6 +489,7 @@ class Entity2D {
     this.orientation = 0;     // rotation in radians; 2*PI = 360º (one full turn)
     this.angular_speed = 0;   // rotational speed
     this.lastCollissionAt = (new Date).getTime();
+    this.health = 1.0;
 
     universe.addEntity(this);
   }
@@ -574,6 +576,7 @@ class Entity2D {
 
   respondToImpactWith(otherEntity) {
     console.log("bang!");
+    this.health -= delta_dammage;
   }
 }
 
@@ -624,16 +627,16 @@ class Asteroid extends Entity2D {
   moveCoordinates() {
     updateCoordinatesForView(this);
 
-    if (this.x > xMax) {
-      this.x -= (xMax - xMin);
-    } else if (this.x < xMin) {
-      this.x += (xMax - xMin);
+    if (this.x > 10*xMax) {
+      this.x -= 10*(xMax - xMin);
+    } else if (this.x < 10*xMin) {
+      this.x += 10*(xMax - xMin);
     }
 
-    if (this.y > yMax) {
-      this.y -= (yMax - yMin);
-    } else if (this.y < yMin) {
-      this.y += (yMax - yMin);
+    if (this.y > 10*yMax) {
+      this.y -= 10*(yMax - yMin);
+    } else if (this.y < 10*yMin) {
+      this.y += 10*(yMax - yMin);
     }
   }
 }
@@ -658,7 +661,11 @@ class Spaceship extends Entity2D {
     if (otherEntity instanceof Bullet) {
       return;
     }
-    console.log("explode!");
+
+    this.health -= delta_dammage;
+
+    jQuery("#healthBar").first().val(this.health);
+    console.log("health:", this.health);
   }
 }
 

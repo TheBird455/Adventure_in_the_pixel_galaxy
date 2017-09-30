@@ -22,7 +22,7 @@ canvas{
   top:0;
   height:100%;
   display:none;
-  
+
 }
 
 h2 {
@@ -123,4 +123,10 @@ nav {
 
 #sound:hover{
   color:lime;
+}
+
+progress#healthBar{
+  color:#734;
+  background-color:#000;
+  border:red;
 }
