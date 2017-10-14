@@ -40,6 +40,7 @@ var canvasHeight;
 var myx, myy, myscale, myangle;
 var myvx, myvy, myomega;
 var paused = false;
+var ammocount = 50;
 
 myvx = 0;
 myvy = 0;
@@ -329,16 +330,20 @@ function keyHandler() {
   for (let keyCode of keyMap.values()) {
 
     switch (keyCode) {
-      case 37: //left
+      case 37:
+      case 65: //left
         myomega -= deltaomega;
         break;
-      case 39: //right
+      case 39:
+      case 68: //right
         myomega += deltaomega;
         break;
-      case 40: //down
+      case 40:
+      case 83: //down
         myvy += delta_v;
         break;
       case 38: //up
+      case 87:
         myvy -= delta_v;
         break;
       case 32:
@@ -734,10 +739,12 @@ function starting_menu() {
 function new_game() {
   $("#starting_menu").hide();
   $("#GameCanvas").show();
+  $(".playerStatus").show();
   $("#title").hide();
   $("#music1")[0].pause();
   $("body").css("background-image", "none");
   $("body").css("background", "black");
+  $("#ammocount").text(ammocount);
 
   $(document).keyup(function(event) {
     keyMap.delete(event.keyCode);
@@ -750,6 +757,11 @@ function new_game() {
 }
 
 function throttled_fire() {
+  if (ammocount <= 0){
+    return;
+  }
+  ammocount -= 1;
+  $("#ammocount").text(ammocount);
   bullet = new Bullet();
 }
 var last_fire = 0;
