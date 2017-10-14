@@ -2,6 +2,8 @@ $(document).ready(function() {
   starting_menu();
 
   start();
+startGeneratingAsteroid();
+
 });
 
 var numberOfStars = 1000;
@@ -773,4 +775,29 @@ function fire() {
     throttled_fire();
     last_fire = current_time;
   }
+}
+
+function startGeneratingAsteroid(){
+  $("body").css("background-image", "none");
+  $("body").css("background", "black");
+  var context = canvas.get(0).getContext("2d");
+  var width = canvas.width();
+  var height = canvas.height();
+  const r0 = Math.sqrt(width*width+height*height)/4;
+  const segments = 20;
+  const r_noise = .35*r0;
+context.translate(width/2,height/2);
+context.moveTo(r0,0);
+context.beginPath();
+var r = r0;
+for (theta = 0; theta < 2*Math.PI; theta += 2*Math.PI/segments){
+  var r_use = (r*(2*Math.PI-theta)+r0*theta)/(2*Math.PI);
+  context.lineTo(r_use*Math.cos(theta),r_use*Math.sin(theta));
+  r += r_noise * (Math.random()*2-1);
+
+}
+context.lineTo(r_use,0);
+context.fillStyle = "#bbb"
+context.fill();
+
 }
