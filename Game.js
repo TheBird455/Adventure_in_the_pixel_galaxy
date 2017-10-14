@@ -497,6 +497,7 @@ class Entity2D {
     this.angular_speed = 0;   // rotational speed
     this.lastCollissionAt = (new Date).getTime();
     this.health = 1.0;
+    this.shield = 1.0;
 
     universe.addEntity(this);
   }
@@ -541,6 +542,14 @@ class Entity2D {
     this.velocity.y = value;
   }
 
+  hit(){
+    if (this.shield <= 0){
+      this.health -= delta_dammage;
+
+    } else{
+      this.shield -= delta_dammage;
+    }
+  }
   // move the entity forward in time
   propagate() {
     for (var i=0;i<this.dimensions;i++) {
@@ -554,6 +563,9 @@ class Entity2D {
   }
 
   draw(context) {
+    if (this.health <= 0.0){
+      return;
+    }
     const center_coordinates = canvas_xy(this.coordinates, this.image.width, this.image.height);
 
     context.translate(center_coordinates.x, center_coordinates.y);
@@ -583,7 +595,7 @@ class Entity2D {
 
   respondToImpactWith(otherEntity) {
     console.log("bang!");
-    this.health -= delta_dammage;
+    this.hit();
   }
 }
 
@@ -669,10 +681,9 @@ class Spaceship extends Entity2D {
       return;
     }
 
-    this.health -= delta_dammage;
-
+    this.hit();
     jQuery("#healthBar").first().val(this.health);
-    console.log("health:", this.health);
+    jQuery("#shield").first().val(this.shield);
   }
 }
 
@@ -794,7 +805,9 @@ for (theta = 0; theta < 2*Math.PI; theta += 2*Math.PI/segments){
   var r_use = (r*(2*Math.PI-theta)+r0*theta)/(2*Math.PI);
   context.lineTo(r_use*Math.cos(theta),r_use*Math.sin(theta));
   r += r_noise * (Math.random()*2-1);
-
+  if (r > 2*r0){
+    r = r0;
+  }
 }
 context.lineTo(r_use,0);
 context.fillStyle = "#bbb"

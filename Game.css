@@ -132,13 +132,14 @@ nav {
   color:lime;
 }
 
-#healthBar, progress::-webkit-progress-bar {
-  color:lime;
+#healthBar, #shield, #fuel, progress::-webkit-progress-bar {
+  color:red;
   background:black;
   z-index: 10;
   height: 20px;
   width: 250px;
 }
+
 
 progress::-webkit-progress-value {
   color: black;
@@ -146,9 +147,11 @@ progress::-webkit-progress-value {
   z-index:10;
   height:20px;
   width:250px;
-
 }
 
+progress::-webkit-progress-value#fuel {
+background-color: red;
+}
 .playerStatus{
   display: none;
 }
