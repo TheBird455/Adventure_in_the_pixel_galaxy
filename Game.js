@@ -820,11 +820,21 @@ for (theta = 0; theta < 2*Math.PI; theta += 2*Math.PI/segments){
 context.lineTo(r_use,0);
 context.fillStyle = "#bbb"
 context.fill();
+context.translate(-w/2,-h/2);
+const numberOfCraters = 1000;
+for (i=0;i<numberOfCraters;i++){
+context.beginPath();
+context.strokeStyle ="#000";
+context.fillStyle = "#000";
+x=Math.random()*w;
+y=Math.random()*h;
+context.arc(x,y,0.5,0,2*Math.PI,true);
+context.fill();
+}
 
 var dataURL = canvas[0].toDataURL();
 asteroidImage = jQuery('#asteroidImage')[0];
 asteroidImage.src = dataURL;
-context.translate(-w/2,-h/2);
 context.fillStyle ="black";
 context.fillRect(0,0,width,height);
 context.drawImage(asteroidImage,0,0,w,h,0,0,width,height);
