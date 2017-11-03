@@ -821,14 +821,14 @@ context.lineTo(r_use,0);
 context.fillStyle = "#bbb"
 context.fill();
 context.translate(-w/2,-h/2);
-const numberOfCraters = 1000;
+const numberOfCraters = 2000;
 for (i=0;i<numberOfCraters;i++){
 context.beginPath();
 context.strokeStyle ="#000";
 context.fillStyle = "#000";
 x=Math.random()*w;
 y=Math.random()*h;
-context.arc(x,y,0.5,0,2*Math.PI,true);
+context.arc(x,y,0.3+0.2*Math.random(),0,2*Math.PI,true);
 context.fill();
 }
 
