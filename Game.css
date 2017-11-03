@@ -33,6 +33,7 @@ canvas#asteroidGenerator{
 }
 
 img#asteroidImage{
+  display: none;
   width: 200;
   height: 200;
 }

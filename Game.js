@@ -794,7 +794,7 @@ function startGeneratingAsteroid(){
   var context = canvas.get(0).getContext("2d");
   var width = canvas.width();
   var height = canvas.height();
-  var scaleFactor = 0.1;
+  var scaleFactor = 0.2;
   var w = width*scaleFactor;
   var h = height*scaleFactor;
   const r0 = Math.sqrt(w*w+h*h)/4;
@@ -824,7 +824,9 @@ context.fill();
 var dataURL = canvas[0].toDataURL();
 asteroidImage = jQuery('#asteroidImage')[0];
 asteroidImage.src = dataURL;
-
+context.translate(-w/2,-h/2);
+context.fillStyle ="black";
+context.fillRect(0,0,width,height);
 context.drawImage(asteroidImage,0,0,w,h,0,0,width,height);
 context.msImageSmoothingEnabled = true;
 context.mozImageSmoothingEnabled = true;
