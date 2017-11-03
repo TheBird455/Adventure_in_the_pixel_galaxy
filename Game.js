@@ -794,10 +794,18 @@ function startGeneratingAsteroid(){
   var context = canvas.get(0).getContext("2d");
   var width = canvas.width();
   var height = canvas.height();
-  const r0 = Math.sqrt(width*width+height*height)/4;
+  var scaleFactor = 0.1;
+  var w = width*scaleFactor;
+  var h = height*scaleFactor;
+  const r0 = Math.sqrt(w*w+h*h)/4;
   const segments = 20;
   const r_noise = .35*r0;
-context.translate(width/2,height/2);
+context.msImageSmoothingEnabled = false;
+context.mozImageSmoothingEnabled = false;
+context.webkitImageSmoothingEnabled = false;
+context.imageSmoothingEnabled = false;
+
+context.translate(w/2,h/2);
 context.moveTo(r0,0);
 context.beginPath();
 var r = r0;
@@ -812,5 +820,15 @@ for (theta = 0; theta < 2*Math.PI; theta += 2*Math.PI/segments){
 context.lineTo(r_use,0);
 context.fillStyle = "#bbb"
 context.fill();
+
+var dataURL = canvas[0].toDataURL();
+asteroidImage = jQuery('#asteroidImage')[0];
+asteroidImage.src = dataURL;
+
+context.drawImage(asteroidImage,0,0,w,h,0,0,width,height);
+context.msImageSmoothingEnabled = true;
+context.mozImageSmoothingEnabled = true;
+context.webkitImageSmoothingEnabled = true;
+context.imageSmoothingEnabled = true;
 
 }

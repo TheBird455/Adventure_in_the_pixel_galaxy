@@ -32,6 +32,11 @@ canvas#asteroidGenerator{
   height: auto;
 }
 
+img#asteroidImage{
+  width: 200;
+  height: 200;
+}
+
 h2 {
   margin: 0;
   margin-top:0.5em;
