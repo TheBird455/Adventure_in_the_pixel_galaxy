@@ -622,64 +622,65 @@ class Bullet extends Entity2D {
   }
 }
 
-class Asteroid extends Entity2D {
-  generateAsteroid (r) {
-    var context = canvas.get(0).getContext("2d");
-    var width = canvas.width();
-    var height = canvas.height();
-    var scaleFactor = 0.2;
-    var w = width*scaleFactor;
-    var h = height*scaleFactor;
-    const r0 = r*Math.sqrt(w*w+h*h)/4;
-    const segments = 20;
-    const r_noise = .35*r0;
-    context.msImageSmoothingEnabled = false;
-    context.mozImageSmoothingEnabled = false;
-    context.webkitImageSmoothingEnabled = false;
-    context.imageSmoothingEnabled = false;
+function generateAsteroid (r) {
+  var context = canvas.get(0).getContext("2d");
+  var width = canvas.width();
+  var height = canvas.height();
+  var scaleFactor = 0.2;
+  var w = width*scaleFactor;
+  var h = height*scaleFactor;
+  const r0 = r*Math.sqrt(w*w+h*h)/4;
+  const segments = 20;
+  const r_noise = .35*r0;
+  context.msImageSmoothingEnabled = false;
+  context.mozImageSmoothingEnabled = false;
+  context.webkitImageSmoothingEnabled = false;
+  context.imageSmoothingEnabled = false;
 
-    context.translate(w/2,h/2);
-    context.moveTo(r0,0);
-    context.beginPath();
-    var r = r0;
-    for (theta = 0; theta < 2*Math.PI; theta += 2*Math.PI/segments){
-      var r_use = (r*(2*Math.PI-theta)+r0*theta)/(2*Math.PI);
-      context.lineTo(r_use*Math.cos(theta),r_use*Math.sin(theta));
-      r += r_noise * (Math.random()*2-1);
-      if (r > 2*r0){
-        r = r0;
-      }
+  context.translate(w/2,h/2);
+  context.moveTo(r0,0);
+  context.beginPath();
+  var r = r0;
+  for (theta = 0; theta < 2*Math.PI; theta += 2*Math.PI/segments){
+    var r_use = (r*(2*Math.PI-theta)+r0*theta)/(2*Math.PI);
+    context.lineTo(r_use*Math.cos(theta),r_use*Math.sin(theta));
+    r += r_noise * (Math.random()*2-1);
+    if (r > 2*r0){
+      r = r0;
     }
-    context.lineTo(r_use,0);
-    context.fillStyle = "#bbb"
-    context.fill();
-    context.translate(-w/2,-h/2);
-    const numberOfCraters = 2000;
-    for (i=0;i<numberOfCraters;i++){
-      context.beginPath();
-      context.strokeStyle ="#000";
-      context.fillStyle = "#000";
-      x=Math.random()*w;
-      y=Math.random()*h;
-      context.arc(x,y,0.3+0.2*Math.random(),0,2*Math.PI,true);
-      context.fill();
-    }
-
-    var dataURL = canvas[0].toDataURL();
-    asteroidImage = jQuery('#asteroidImage')[0];
-    asteroidImage.src = dataURL;
-    context.fillStyle ="black";
-    context.fillRect(0,0,width,height);
-    context.drawImage(asteroidImage,0,0,w,h,0,0,width,height);
-    context.msImageSmoothingEnabled = true;
-    context.mozImageSmoothingEnabled = true;
-    context.webkitImageSmoothingEnabled = true;
-    context.imageSmoothingEnabled = true;
-    // TODO save image
   }
+  context.lineTo(r_use,0);
+  context.fillStyle = "#bbb"
+  context.fill();
+  context.translate(-w/2,-h/2);
+  const numberOfCraters = 2000;
+  for (i=0;i<numberOfCraters;i++){
+    context.beginPath();
+    context.strokeStyle ="#000";
+    context.fillStyle = "#000";
+    x=Math.random()*w;
+    y=Math.random()*h;
+    context.arc(x,y,0.3+0.2*Math.random(),0,2*Math.PI,true);
+    context.fill();
+  }
+
+  var dataURL = canvas[0].toDataURL();
+  asteroidImage = jQuery('<img></img>')[0];
+  asteroidImage.src = dataURL;
+  context.fillStyle ="black";
+  context.fillRect(0,0,width,height);
+  context.drawImage(asteroidImage,0,0,w,h,0,0,width,height);
+  context.msImageSmoothingEnabled = true;
+  context.mozImageSmoothingEnabled = true;
+  context.webkitImageSmoothingEnabled = true;
+  context.imageSmoothingEnabled = true;
+  return canvas[0].toDataURL();
+}
+class Asteroid extends Entity2D {
   constructor(r) {
     super(); // run the Entity2D setup
     this.r = r;
+    //generateAsteroid(r);
     this.image.src = asteroidImages[Math.floor(Math.random() * asteroidImages.length)];
   }
 
