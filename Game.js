@@ -23,6 +23,8 @@ const delta_v = 0.1;
 const deltaomega = 0.03;
 const delta_dammage = 0.1;
 const max_v = 10.0;
+const mininimumAsteroidSize = 0.25;
+const maximumAsteroidSize = 1.0;
 const mininimumAsteroidVelocity     = 0.2;
 const maximumAsteroidVelocity       = 1.5;
 const maximumAsteroidRotationSpeed  = .3;
@@ -620,9 +622,9 @@ class Bullet extends Entity2D {
 }
 
 class Asteroid extends Entity2D {
-  constructor() {
+  constructor(r) {
     super(); // run the Entity2D setup
-
+    this.r = r;
     this.image.src = asteroidImages[Math.floor(Math.random() * asteroidImages.length)];
   }
 
@@ -631,7 +633,7 @@ class Asteroid extends Entity2D {
       return; // don't break up on colliding with other asteroids..
     }
     console.log("breakup!");
-    asteroid = new Asteroid();
+    asteroid = new Asteroid(Math.random()*(maximumAsteroidSize - mininimumAsteroidSize) + mininimumAsteroidSize);
     asteroid.x = this.x;
     asteroid.y = this.y;
 
@@ -694,7 +696,7 @@ function start() {
 
   // generate the initial asteroids
   for (var i=0;i<numberOfAsteroids;i++) {
-    asteroid = new Asteroid();
+    asteroid = new Asteroid(Math.random()*(maximumAsteroidSize - mininimumAsteroidSize) + mininimumAsteroidSize);
     asteroid.x = (xMax - xMin) * Math.random() + xMin;
     asteroid.y = (yMax - yMin) * Math.random() + yMin;
 
@@ -788,16 +790,14 @@ function fire() {
   }
 }
 
-function startGeneratingAsteroid(){
-  $("body").css("background-image", "none");
-  $("body").css("background", "black");
+function generateAsteroid (r) {
   var context = canvas.get(0).getContext("2d");
   var width = canvas.width();
   var height = canvas.height();
   var scaleFactor = 0.2;
   var w = width*scaleFactor;
   var h = height*scaleFactor;
-  const r0 = Math.sqrt(w*w+h*h)/4;
+  const r0 = r*Math.sqrt(w*w+h*h)/4;
   const segments = 20;
   const r_noise = .35*r0;
 context.msImageSmoothingEnabled = false;
@@ -842,5 +842,12 @@ context.msImageSmoothingEnabled = true;
 context.mozImageSmoothingEnabled = true;
 context.webkitImageSmoothingEnabled = true;
 context.imageSmoothingEnabled = true;
+
+}
+
+function startGeneratingAsteroid(){
+  $("body").css("background-image", "none");
+  $("body").css("background", "black");
+  generateAsteroid(Math.random()*0.75+0.25);
 
 }
