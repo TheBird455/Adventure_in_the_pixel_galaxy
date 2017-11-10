@@ -23,6 +23,8 @@ const delta_v = 0.1;
 const deltaomega = 0.03;
 const delta_dammage = 0.1;
 const max_v = 10.0;
+const minNumberOfFragments = 2;
+const maxNumberOfFragments = 5;
 const mininimumAsteroidSize = 0.25;
 const maximumAsteroidSize = 1.0;
 const mininimumAsteroidVelocity     = 0.2;
@@ -633,16 +635,26 @@ class Asteroid extends Entity2D {
       return; // don't break up on colliding with other asteroids..
     }
     console.log("breakup!");
-    asteroid = new Asteroid(Math.random()*(maximumAsteroidSize - mininimumAsteroidSize) + mininimumAsteroidSize);
-    asteroid.x = this.x;
-    asteroid.y = this.y;
+    var numberOfFragments = Math.floor(minNumberOfFragments + Math.random()*(maxNumberOfFragments - minNumberOfFragments));
+    for (i=0; i<numberOfFragments; i++){
+    var fragmentScaleFactor = Math.pow (numberOfFragments, -.33333333);
+    var newR = this.r * fragmentScaleFactor;
+      if (newR < mininimumAsteroidSize){
+        continue;
+      }
+      asteroid = new Asteroid(newR);
+      asteroid.x = this.x;
+      asteroid.y = this.y;
 
-    asteroidSpeed = Math.random() * (maximumAsteroidVelocity - mininimumAsteroidVelocity) + mininimumAsteroidVelocity;
-    asteroidDirection = Math.random() * 2 * Math.PI;
-    asteroid.vx = asteroidSpeed * Math.cos(asteroidDirection);
-    asteroid.vy = asteroidSpeed * Math.sin(asteroidDirection);
-    asteroid.orientation = Math.PI * 2 * Math.random();
-    asteroid.angular_speed = (2 * Math.random() - 1) * maximumAsteroidRotationSpeed
+      asteroidSpeed = Math.random() * (maximumAsteroidVelocity - mininimumAsteroidVelocity) + mininimumAsteroidVelocity;
+      asteroidDirection = Math.random() * 2 * Math.PI;
+      asteroid.vx = asteroidSpeed * Math.cos(asteroidDirection);
+      asteroid.vy = asteroidSpeed * Math.sin(asteroidDirection);
+      asteroid.orientation = Math.PI * 2 * Math.random();
+      asteroid.angular_speed = (2 * Math.random() - 1) * maximumAsteroidRotationSpeed;
+    }
+
+    universe.removeEntity(this);
   }
 
   moveCoordinates() {
