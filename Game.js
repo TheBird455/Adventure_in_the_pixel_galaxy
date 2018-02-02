@@ -624,6 +624,7 @@ class Bullet extends Entity2D {
 
 function generateAsteroid (r) {
   var context = canvas.get(0).getContext("2d");
+  window.context = context;
   var width = canvas.width();
   var height = canvas.height();
   var scaleFactor = 0.2;
@@ -633,7 +634,6 @@ function generateAsteroid (r) {
   const segments = 20;
   const r_noise = .35*r0;
   context.msImageSmoothingEnabled = false;
-  context.mozImageSmoothingEnabled = false;
   context.webkitImageSmoothingEnabled = false;
   context.imageSmoothingEnabled = false;
 
@@ -665,17 +665,17 @@ function generateAsteroid (r) {
   }
 
   var dataURL = canvas[0].toDataURL();
-  asteroidImage = jQuery('<img></img>')[0];
+  asteroidImage = jQuery('<img id="dummy_image"></img>')[0];
   asteroidImage.src = dataURL;
   context.fillStyle ="black";
   context.fillRect(0,0,width,height);
   context.drawImage(asteroidImage,0,0,w,h,0,0,width,height);
   context.msImageSmoothingEnabled = true;
-  context.mozImageSmoothingEnabled = true;
   context.webkitImageSmoothingEnabled = true;
   context.imageSmoothingEnabled = true;
   return canvas[0].toDataURL();
 }
+
 class Asteroid extends Entity2D {
   constructor(r) {
     super(); // run the Entity2D setup
@@ -857,9 +857,9 @@ function fire() {
   }
 }
 
-/*function startGeneratingAsteroid(){
+function startGeneratingAsteroid(){
   $("body").css("background-image", "none");
   $("body").css("background", "black");
   generateAsteroid(Math.random()*0.75+0.25);
 
-}*/
+}

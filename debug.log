@@ -1,0 +1,6 @@
+[1109/204709.226:ERROR:process_info.cc(350)] VirtualQueryEx: Access is denied. (0x5)
+[1109/204709.228:ERROR:process_info.cc(571)] ReadMemoryInfo failed
+[1109/204709.231:ERROR:process_reader_win.cc(151)] SuspendThread: Access is denied. (0x5)
+[1109/204709.231:ERROR:exception_snapshot_win.cc(87)] thread ID 10752 not found in process
+[1109/204709.231:WARNING:crash_report_exception_handler.cc(62)] ProcessSnapshotWin::Initialize failed
+[1109/204709.231:ERROR:scoped_process_suspend.cc(39)] NtResumeProcess: An attempt was made to access an exiting process.  (0xc000010a)

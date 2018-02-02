@@ -138,16 +138,32 @@ nav {
   color:lime;
 }
 
-#healthBar, #shield, #fuel, progress::-webkit-progress-bar {
+#fuel, progress::-webkit-progress-bar{
   z-index: 10;
   height: 25px;
   width: 300px;
-
 }
 
-#healthBar, progress::-webkit-progress-value  {
+#fuel, progress::-webkit-progress-value{
+  color: black;
+  background: red ;
+}
+
+#shield, progress::-webkit-progress-bar{
+  z-index: 10;
+  height: 25px;
+  width: 300px;
+}
+
+#healthBar, progress::-webkit-progress-bar{
+  z-index: 10;
+  height: 25px;
+  width: 300px;
+}
+
+#healthBar, progress::-webkit-progress-value{
   color: black ;
-  background: lime ;
+  background: red ;
 }
 
 .playerStatus{
